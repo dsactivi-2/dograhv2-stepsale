@@ -28,17 +28,17 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  type ShadowQuizQuestion,
-  type TrainingAttempt,
-  type TrainingModule,
-  type TrainingProgress,
   completeShadowModule,
   completeVoiceDrill,
   createTrainingModule,
   fetchTrainingProgress,
   listTrainingModules,
   runTextDrill,
+  type ShadowQuizQuestion,
   startVoiceDrill,
+  type TrainingAttempt,
+  type TrainingModule,
+  type TrainingProgress,
 } from "@/lib/api/training";
 import { useAuth } from "@/lib/auth";
 

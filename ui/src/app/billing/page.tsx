@@ -16,6 +16,7 @@ import { toast } from "sonner";
 
 import { createMpsCreditPurchaseUrlApiV1OrganizationsUsageMpsCreditsPurchaseUrlPost, getBillingCreditsApiV1OrganizationsBillingCreditsGet } from "@/client/sdk.gen";
 import type { MpsBillingCreditsResponse, MpsCreditLedgerEntryResponse } from "@/client/types.gen";
+import { ScopeHint } from "@/components/manage/DataScopeNotice";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,7 +32,6 @@ import {
 } from "@/components/ui/table";
 import { useAppConfig } from "@/context/AppConfigContext";
 import { useOrganizationTimezone } from "@/hooks/useOrganizationTimezone";
-import { ScopeHint } from "@/components/manage/DataScopeNotice";
 import { useAuth } from "@/lib/auth";
 import { formatDateTime } from "@/lib/dateTime";
 

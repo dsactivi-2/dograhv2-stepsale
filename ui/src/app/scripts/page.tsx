@@ -27,12 +27,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import {
   type ApprovalStatus,
-  type DefinitionDiffResponse,
-  type PromptSearchHit,
-  type ScriptEntry,
   createScript,
+  type DefinitionDiffResponse,
   diffDefinitions,
   listScripts,
+  type PromptSearchHit,
+  type ScriptEntry,
   searchPrompts,
   updateScript,
 } from "@/lib/api/scripts";

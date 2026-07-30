@@ -6,6 +6,10 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
 import { getWorkflowOptionsApiV1OrganizationsReportsWorkflowsGet } from "@/client/sdk.gen";
+import {
+  ScopeHint,
+  TruncationBanner,
+} from "@/components/manage/DataScopeNotice";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -32,10 +36,6 @@ import {
   type CostGroupBy,
   fetchCostAttributionSummary,
 } from "@/lib/api/costAttribution";
-import {
-  ScopeHint,
-  TruncationBanner,
-} from "@/components/manage/DataScopeNotice";
 import { useAuth } from "@/lib/auth";
 
 type WorkflowOption = { id: number; name: string };

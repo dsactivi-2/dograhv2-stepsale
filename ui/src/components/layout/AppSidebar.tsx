@@ -1,13 +1,10 @@
 "use client";
 
 import {
-  BarChart3,
-  AlertTriangle,
   ArrowUpCircle,
   AudioLines,
+  BarChart3,
   Brain,
-  ChevronLeft,
-  ChevronRight,
   CircleDollarSign,
   ClipboardCheck,
   Database,
@@ -36,7 +33,6 @@ import React from "react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { SidebarTeamSwitcher } from "@/components/layout/SidebarTeamSwitcher";
 import ThemeToggle from "@/components/ThemeSwitcher";
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
