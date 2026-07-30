@@ -11,6 +11,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from api.db import db_client
 from api.db.models import UserModel
 from api.schemas.cost_attribution import CostAttributionSummary, CostBucket
+from api.services.aggregation_meta import sample_meta
 from api.services.auth.depends import get_user
 from api.services.cost_attribution.extract import summarize_cost_rows
 
@@ -61,15 +62,31 @@ async def cost_attribution_summary(
 ) -> CostAttributionSummary:
     org_id = _require_org(user)
     start_utc, end_utc = _parse_range(from_date, to_date, timezone)
-
-    rows = await db_client.list_runs_for_cost_attribution(
+    sample_limit = 10000
+    total_matching = await db_client.count_runs_for_cost_attribution(
         organization_id=org_id,
         start_utc=start_utc,
         end_utc=end_utc,
         workflow_id=workflow_id,
         campaign_id=campaign_id,
     )
+    rows = await db_client.list_runs_for_cost_attribution(
+        organization_id=org_id,
+        start_utc=start_utc,
+        end_utc=end_utc,
+        workflow_id=workflow_id,
+        campaign_id=campaign_id,
+        max_rows=sample_limit,
+    )
     summary = summarize_cost_rows(rows, group_by=group_by)
+    meta = sample_meta(
+        total_matching=total_matching,
+        sampled=len(rows),
+        sample_limit=sample_limit,
+    )
+    notes = list(summary.get("notes") or [])
+    if meta.get("truncation_note"):
+        notes = [meta["truncation_note"], *notes]
     return CostAttributionSummary(
         from_date=from_date,
         to_date=to_date,
@@ -86,5 +103,6 @@ async def cost_attribution_summary(
         total_charge_usd=summary["total_charge_usd"],
         total_dograh_tokens=summary["total_dograh_tokens"],
         buckets=[CostBucket(**b) for b in summary["buckets"]],
-        notes=list(summary.get("notes") or []),
+        notes=notes,
+        **meta,
     )

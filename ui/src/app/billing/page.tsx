@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/table";
 import { useAppConfig } from "@/context/AppConfigContext";
 import { useOrganizationTimezone } from "@/hooks/useOrganizationTimezone";
+import { ScopeHint } from "@/components/manage/DataScopeNotice";
 import { useAuth } from "@/lib/auth";
 import { formatDateTime } from "@/lib/dateTime";
 
@@ -260,6 +261,8 @@ export default function BillingPage() {
                     )}
                 </div>
             </div>
+
+            <ScopeHint variant="billing" />
 
             {isOssMode && (
                 <div className="flex gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/50 dark:bg-amber-950/30">

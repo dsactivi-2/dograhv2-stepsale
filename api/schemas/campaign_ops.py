@@ -89,3 +89,8 @@ class CampaignOpsSummary(BaseModel):
     disposition_distribution: list[DispositionBucket] = Field(default_factory=list)
     totals: dict[str, int] = Field(default_factory=dict)
     campaigns: list[CampaignOpsRow] = Field(default_factory=list)
+    total_matching_campaigns: int = 0
+    sampled_campaigns: int = 0
+    sample_limit: int = 0
+    truncated: bool = False
+    truncation_note: Optional[str] = None

@@ -30,6 +30,7 @@ import {
   saveWorkflowTaxonomy,
   type DispositionTaxonomy,
 } from "@/lib/api/disposition";
+import { TruncationBanner } from "@/components/manage/DataScopeNotice";
 import { useAuth } from "@/lib/auth";
 
 type WorkflowOption = { id: number; name: string };
@@ -183,6 +184,8 @@ export default function AnalyticsOutcomesPage() {
           Aktualisieren
         </Button>
       </div>
+
+      <TruncationBanner meta={summary} entityLabel="runs" />
 
       <Card className="grid gap-4 p-4 md:grid-cols-4">
         <div className="space-y-1.5">

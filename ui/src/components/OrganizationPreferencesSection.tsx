@@ -22,6 +22,7 @@ const emptyPreferences: OrganizationPreferences = {
   test_phone_number: "",
   timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
   external_pbx_integrations_enabled: false,
+  ops_reviewer_emails: [],
 };
 
 const timezoneSelectStyles = {
@@ -134,6 +135,7 @@ export function OrganizationPreferencesSection() {
         timezone: nextPreferences.timezone || emptyPreferences.timezone,
         external_pbx_integrations_enabled:
           nextPreferences.external_pbx_integrations_enabled ?? false,
+        ops_reviewer_emails: nextPreferences.ops_reviewer_emails ?? [],
       });
       setTimezone(
         nextPreferences.timezone || emptyPreferences.timezone || "UTC",
@@ -157,6 +159,7 @@ export function OrganizationPreferencesSection() {
               timezone: getTimezoneValue(timezone),
               external_pbx_integrations_enabled:
                 preferences.external_pbx_integrations_enabled ?? false,
+              ops_reviewer_emails: preferences.ops_reviewer_emails ?? [],
             },
           },
         );
@@ -175,6 +178,7 @@ export function OrganizationPreferencesSection() {
         timezone: result.data.timezone || emptyPreferences.timezone,
         external_pbx_integrations_enabled:
           result.data.external_pbx_integrations_enabled ?? false,
+        ops_reviewer_emails: result.data.ops_reviewer_emails ?? [],
       });
       setTimezone(result.data.timezone || emptyPreferences.timezone || "UTC");
       await refreshConfig();
@@ -241,6 +245,28 @@ export function OrganizationPreferencesSection() {
             })
           }
         />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="settings-ops-reviewers">Ops reviewer emails</Label>
+        <Input
+          id="settings-ops-reviewers"
+          value={(preferences.ops_reviewer_emails || []).join(", ")}
+          onChange={(event) =>
+            setPreferences({
+              ...preferences,
+              ops_reviewer_emails: event.target.value
+                .split(",")
+                .map((e) => e.trim())
+                .filter(Boolean),
+            })
+          }
+          placeholder="reviewer@company.com, lead@company.com"
+        />
+        <p className="text-xs text-muted-foreground">
+          Comma-separated. When set, only these emails (and superusers) can
+          override QA scores or approve/reject scripts. Leave empty to allow
+          any org member (legacy).
+        </p>
       </div>
       <Button type="submit" disabled={saving}>
         <Save className="mr-2 h-4 w-4" />

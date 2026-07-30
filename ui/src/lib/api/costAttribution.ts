@@ -42,6 +42,11 @@ export type CostAttributionSummary = {
   total_dograh_tokens: number;
   buckets: CostBucket[];
   notes: string[];
+  total_matching_runs?: number;
+  sampled_runs?: number;
+  sample_limit?: number;
+  truncated?: boolean;
+  truncation_note?: string | null;
 };
 
 export type CostAttributionQuery = {

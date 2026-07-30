@@ -186,6 +186,7 @@ def build_qa_center_row(
     annotations: dict[str, Any] | None,
     max_score: float = DEFAULT_MAX_SCORE,
     problem_tags: Optional[list[str]] = None,
+    campaign_id: Optional[int] = None,
 ) -> QaCenterRunRow:
     qa = normalize_run_qa(run_id, annotations, workflow_id)
     override = read_override(annotations)
@@ -232,6 +233,7 @@ def build_qa_center_row(
         run_id=run_id,
         workflow_id=workflow_id,
         workflow_name=workflow_name or "",
+        campaign_id=campaign_id,
         created_at=created_at,
         is_completed=bool(is_completed),
         disposition=disposition or "UNKNOWN",

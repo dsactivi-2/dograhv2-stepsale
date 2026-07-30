@@ -54,6 +54,7 @@ export type OutcomesSummary = {
   to_date: string;
   timezone: string;
   workflow_id: number | null;
+  campaign_id?: number | null;
   total_runs: number;
   completed_runs: number;
   disposition_distribution: DispositionBucket[];
@@ -64,6 +65,11 @@ export type OutcomesSummary = {
   };
   average_qa_score: number | null;
   top_qa_tags: Array<{ tag: string; count: number }>;
+  total_matching_runs?: number;
+  sampled_runs?: number;
+  sample_limit?: number;
+  truncated?: boolean;
+  truncation_note?: string | null;
 };
 
 export type OutcomesListResponse = {

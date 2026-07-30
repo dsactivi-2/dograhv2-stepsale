@@ -18,6 +18,8 @@ from api.schemas.script_library import (
     ScriptListResponse,
 )
 from api.services.auth.depends import get_user
+from api.services.auth.ops_permissions import can_perform_ops_review
+from api.services.organization_preferences import get_organization_preferences
 from api.services.script_library.diff import diff_definition_prompts
 
 router = APIRouter(prefix="/scripts", tags=["scripts"])
@@ -167,6 +169,9 @@ async def update_script(
 ) -> ScriptEntryResponse:
     org_id = _require_org(user)
     try:
+        is_ops = await can_perform_ops_review(user)
+        prefs = await get_organization_preferences(org_id)
+        ops_strict = bool(getattr(prefs, "ops_reviewer_emails", None) or [])
         entry = await db_client.update_script_entry(
             entry_id,
             org_id,
@@ -177,6 +182,8 @@ async def update_script(
             approval_status=body.approval_status,
             actor_user_id=user.id,
             actor_is_superuser=bool(user.is_superuser),
+            actor_is_ops_reviewer=is_ops,
+            ops_review_strict=ops_strict,
         )
     except PermissionError as e:
         raise HTTPException(status_code=403, detail=str(e)) from e

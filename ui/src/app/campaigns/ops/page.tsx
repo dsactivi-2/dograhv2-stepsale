@@ -38,6 +38,10 @@ import {
   type CampaignOpsSummary,
   fetchCampaignOpsSummary,
 } from "@/lib/api/campaignOps";
+import {
+  ScopeHint,
+  TruncationBanner,
+} from "@/components/manage/DataScopeNotice";
 import { useAuth } from "@/lib/auth";
 
 type WorkflowOption = { id: number; name: string };
@@ -183,6 +187,9 @@ export default function CampaignControlTowerPage() {
           </Button>
         </div>
       </div>
+
+      <ScopeHint variant="campaign-ops" />
+      <TruncationBanner meta={summary} entityLabel="campaigns" />
 
       <Card className="grid gap-4 p-4 md:grid-cols-4">
         <div className="space-y-1.5">

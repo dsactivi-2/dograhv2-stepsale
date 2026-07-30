@@ -47,6 +47,17 @@ class OutcomeRunRow(BaseModel):
     duration_seconds: Optional[float] = None
     call_tags: list[str] = Field(default_factory=list)
     qa: QaRunOutcome
+    campaign_id: Optional[int] = None
+
+
+class AggregationSampleMeta(BaseModel):
+    """Shared sample/truncation fields for in-memory aggregates."""
+
+    total_matching_runs: int = 0
+    sampled_runs: int = 0
+    sample_limit: int = 0
+    truncated: bool = False
+    truncation_note: Optional[str] = None
 
 
 class OutcomesSummaryResponse(BaseModel):
@@ -54,12 +65,18 @@ class OutcomesSummaryResponse(BaseModel):
     to_date: str
     timezone: str
     workflow_id: Optional[int] = None
+    campaign_id: Optional[int] = None
     total_runs: int
     completed_runs: int
     disposition_distribution: list[dict[str, Any]]
     qa_coverage: dict[str, Any]
     average_qa_score: Optional[float] = None
     top_qa_tags: list[dict[str, Any]]
+    total_matching_runs: int = 0
+    sampled_runs: int = 0
+    sample_limit: int = 0
+    truncated: bool = False
+    truncation_note: Optional[str] = None
 
 
 class OutcomesListResponse(BaseModel):

@@ -48,6 +48,7 @@ class QaCenterRunRow(BaseModel):
     run_id: int
     workflow_id: int
     workflow_name: str = ""
+    campaign_id: Optional[int] = None
     created_at: Optional[datetime] = None
     is_completed: bool = False
     disposition: str = "UNKNOWN"
@@ -100,6 +101,7 @@ class QaCenterSummary(BaseModel):
     to_date: str
     timezone: str
     workflow_id: Optional[int] = None
+    campaign_id: Optional[int] = None
     total_runs: int
     runs_with_qa: int
     runs_without_qa: int
@@ -116,6 +118,11 @@ class QaCenterSummary(BaseModel):
     compliance_summary: list[ComplianceFlagSummary] = Field(default_factory=list)
     max_score_threshold: float = 6.0
     problem_tags: list[str] = Field(default_factory=list)
+    total_matching_runs: int = 0
+    sampled_runs: int = 0
+    sample_limit: int = 0
+    truncated: bool = False
+    truncation_note: Optional[str] = None
 
 
 class QaCenterQueueResponse(BaseModel):
@@ -125,6 +132,12 @@ class QaCenterQueueResponse(BaseModel):
     max_score_threshold: float
     problem_tags: list[str]
     runs: list[QaCenterRunRow]
+    campaign_id: Optional[int] = None
+    total_matching_runs: int = 0
+    sampled_runs: int = 0
+    sample_limit: int = 0
+    truncated: bool = False
+    truncation_note: Optional[str] = None
 
 
 class QaCenterDetailResponse(BaseModel):

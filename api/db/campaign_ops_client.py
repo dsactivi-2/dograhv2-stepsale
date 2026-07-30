@@ -12,6 +12,61 @@ from api.db.models import CampaignModel, QueuedRunModel, WorkflowModel, Workflow
 
 
 class CampaignOpsClient(BaseDBClient):
+    def _campaign_ops_filters(
+        self,
+        organization_id: int,
+        start_utc: Optional[datetime] = None,
+        end_utc: Optional[datetime] = None,
+        campaign_id: Optional[int] = None,
+        workflow_id: Optional[int] = None,
+    ) -> list:
+        filters = [CampaignModel.organization_id == organization_id]
+        if campaign_id is not None:
+            filters.append(CampaignModel.id == campaign_id)
+        if workflow_id is not None:
+            filters.append(CampaignModel.workflow_id == workflow_id)
+        if start_utc is not None and end_utc is not None:
+            filters.append(
+                or_(
+                    CampaignModel.created_at.between(start_utc, end_utc),
+                    CampaignModel.started_at.between(start_utc, end_utc),
+                    CampaignModel.completed_at.between(start_utc, end_utc),
+                    (
+                        (CampaignModel.state.in_(["running", "paused", "syncing"]))
+                        & (
+                            (CampaignModel.started_at.is_(None))
+                            | (CampaignModel.started_at <= end_utc)
+                        )
+                    ),
+                )
+            )
+        elif start_utc is not None:
+            filters.append(
+                or_(
+                    CampaignModel.created_at >= start_utc,
+                    CampaignModel.started_at >= start_utc,
+                    CampaignModel.completed_at >= start_utc,
+                )
+            )
+        elif end_utc is not None:
+            filters.append(CampaignModel.created_at <= end_utc)
+        return filters
+
+    async def count_campaigns_for_ops(
+        self,
+        organization_id: int,
+        start_utc: Optional[datetime] = None,
+        end_utc: Optional[datetime] = None,
+        campaign_id: Optional[int] = None,
+        workflow_id: Optional[int] = None,
+    ) -> int:
+        async with self.async_session() as session:
+            filters = self._campaign_ops_filters(
+                organization_id, start_utc, end_utc, campaign_id, workflow_id
+            )
+            count_q = select(func.count(CampaignModel.id)).where(*filters)
+            return int((await session.execute(count_q)).scalar_one())
+
     async def list_campaigns_for_ops(
         self,
         organization_id: int,
@@ -23,38 +78,9 @@ class CampaignOpsClient(BaseDBClient):
     ) -> list[dict[str, Any]]:
         """Campaigns in org, optionally filtered by activity window / ids."""
         async with self.async_session() as session:
-            filters = [CampaignModel.organization_id == organization_id]
-            if campaign_id is not None:
-                filters.append(CampaignModel.id == campaign_id)
-            if workflow_id is not None:
-                filters.append(CampaignModel.workflow_id == workflow_id)
-            # Campaigns created or active within the selected range
-            if start_utc is not None and end_utc is not None:
-                filters.append(
-                    or_(
-                        CampaignModel.created_at.between(start_utc, end_utc),
-                        CampaignModel.started_at.between(start_utc, end_utc),
-                        CampaignModel.completed_at.between(start_utc, end_utc),
-                        # Still-running campaigns started before the window
-                        (
-                            (CampaignModel.state.in_(["running", "paused", "syncing"]))
-                            & (
-                                (CampaignModel.started_at.is_(None))
-                                | (CampaignModel.started_at <= end_utc)
-                            )
-                        ),
-                    )
-                )
-            elif start_utc is not None:
-                filters.append(
-                    or_(
-                        CampaignModel.created_at >= start_utc,
-                        CampaignModel.started_at >= start_utc,
-                        CampaignModel.completed_at >= start_utc,
-                    )
-                )
-            elif end_utc is not None:
-                filters.append(CampaignModel.created_at <= end_utc)
+            filters = self._campaign_ops_filters(
+                organization_id, start_utc, end_utc, campaign_id, workflow_id
+            )
 
             q = (
                 select(

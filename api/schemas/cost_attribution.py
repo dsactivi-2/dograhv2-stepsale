@@ -44,3 +44,8 @@ class CostAttributionSummary(BaseModel):
     total_dograh_tokens: float = 0.0
     buckets: list[CostBucket] = Field(default_factory=list)
     notes: list[str] = Field(default_factory=list)
+    total_matching_runs: int = 0
+    sampled_runs: int = 0
+    sample_limit: int = 0
+    truncated: bool = False
+    truncation_note: Optional[str] = None

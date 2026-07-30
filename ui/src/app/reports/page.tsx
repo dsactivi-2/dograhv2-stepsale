@@ -35,6 +35,7 @@ interface DailyReport {
   metrics: {
     total_runs: number;
     xfer_count: number;
+    success_count?: number;
   };
   disposition_distribution: Array<{
     disposition: string;

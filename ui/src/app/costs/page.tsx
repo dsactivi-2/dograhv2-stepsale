@@ -32,6 +32,10 @@ import {
   type CostGroupBy,
   fetchCostAttributionSummary,
 } from "@/lib/api/costAttribution";
+import {
+  ScopeHint,
+  TruncationBanner,
+} from "@/components/manage/DataScopeNotice";
 import { useAuth } from "@/lib/auth";
 
 type WorkflowOption = { id: number; name: string };
@@ -149,6 +153,9 @@ export default function CostAttributionPage() {
           </Button>
         </div>
       </div>
+
+      <ScopeHint variant="costs" />
+      <TruncationBanner meta={summary} entityLabel="runs" />
 
       <Card className="grid gap-4 p-4 md:grid-cols-5">
         <div className="space-y-1.5">
