@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Optional
-
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from api.db import db_client
@@ -62,10 +60,10 @@ async def scripts_health():
 
 @router.get("", response_model=ScriptListResponse)
 async def list_scripts(
-    workflow_id: Optional[int] = Query(None),
-    approval_status: Optional[str] = Query(None),
-    tag: Optional[str] = Query(None),
-    owner_user_id: Optional[int] = Query(None),
+    workflow_id: int | None = Query(None),
+    approval_status: str | None = Query(None),
+    tag: str | None = Query(None),
+    owner_user_id: int | None = Query(None),
     page: int = Query(1, ge=1),
     limit: int = Query(50, ge=1, le=200),
     user: UserModel = Depends(get_user),
@@ -108,7 +106,7 @@ async def create_script(
 @router.get("/search/prompts", response_model=PromptSearchResponse)
 async def search_prompts(
     q: str = Query(..., min_length=1, max_length=200),
-    workflow_id: Optional[int] = Query(None),
+    workflow_id: int | None = Query(None),
     limit: int = Query(40, ge=1, le=100),
     user: UserModel = Depends(get_user),
 ) -> PromptSearchResponse:
@@ -203,6 +201,8 @@ async def delete_script(
         raise HTTPException(status_code=404, detail="Script entry not found")
     # owner or superuser
     if entry.owner_user_id != user.id and not user.is_superuser:
-        raise HTTPException(status_code=403, detail="Only owner or superuser can delete")
+        raise HTTPException(
+            status_code=403, detail="Only owner or superuser can delete"
+        )
     await db_client.delete_script_entry(entry_id, org_id)
     return {"ok": True, "id": entry_id}

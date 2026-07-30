@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime, time
-from typing import Literal, Optional
+from typing import Literal
 from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -28,7 +28,9 @@ def _parse_range(from_date: str, to_date: str, timezone: str):
     try:
         tz = ZoneInfo(timezone)
     except Exception as exc:
-        raise HTTPException(status_code=400, detail=f"Invalid timezone: {timezone}") from exc
+        raise HTTPException(
+            status_code=400, detail=f"Invalid timezone: {timezone}"
+        ) from exc
     try:
         start = datetime.combine(
             datetime.strptime(from_date, "%Y-%m-%d").date(), time.min, tzinfo=tz
@@ -55,8 +57,8 @@ async def cost_attribution_summary(
     from_date: str = Query(..., description="YYYY-MM-DD"),
     to_date: str = Query(..., description="YYYY-MM-DD"),
     timezone: str = Query("UTC"),
-    workflow_id: Optional[int] = Query(None),
-    campaign_id: Optional[int] = Query(None),
+    workflow_id: int | None = Query(None),
+    campaign_id: int | None = Query(None),
     group_by: Literal["workflow", "campaign", "definition"] = Query("workflow"),
     user: UserModel = Depends(get_user),
 ) -> CostAttributionSummary:

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 from sqlalchemy import func, or_, select
 
@@ -15,10 +15,10 @@ class CampaignOpsClient(BaseDBClient):
     def _campaign_ops_filters(
         self,
         organization_id: int,
-        start_utc: Optional[datetime] = None,
-        end_utc: Optional[datetime] = None,
-        campaign_id: Optional[int] = None,
-        workflow_id: Optional[int] = None,
+        start_utc: datetime | None = None,
+        end_utc: datetime | None = None,
+        campaign_id: int | None = None,
+        workflow_id: int | None = None,
     ) -> list:
         filters = [CampaignModel.organization_id == organization_id]
         if campaign_id is not None:
@@ -55,10 +55,10 @@ class CampaignOpsClient(BaseDBClient):
     async def count_campaigns_for_ops(
         self,
         organization_id: int,
-        start_utc: Optional[datetime] = None,
-        end_utc: Optional[datetime] = None,
-        campaign_id: Optional[int] = None,
-        workflow_id: Optional[int] = None,
+        start_utc: datetime | None = None,
+        end_utc: datetime | None = None,
+        campaign_id: int | None = None,
+        workflow_id: int | None = None,
     ) -> int:
         async with self.async_session() as session:
             filters = self._campaign_ops_filters(
@@ -70,10 +70,10 @@ class CampaignOpsClient(BaseDBClient):
     async def list_campaigns_for_ops(
         self,
         organization_id: int,
-        start_utc: Optional[datetime] = None,
-        end_utc: Optional[datetime] = None,
-        campaign_id: Optional[int] = None,
-        workflow_id: Optional[int] = None,
+        start_utc: datetime | None = None,
+        end_utc: datetime | None = None,
+        campaign_id: int | None = None,
+        workflow_id: int | None = None,
         max_rows: int = 200,
     ) -> list[dict[str, Any]]:
         """Campaigns in org, optionally filtered by activity window / ids."""
@@ -224,8 +224,8 @@ class CampaignOpsClient(BaseDBClient):
         self,
         organization_id: int,
         campaign_ids: list[int],
-        start_utc: Optional[datetime] = None,
-        end_utc: Optional[datetime] = None,
+        start_utc: datetime | None = None,
+        end_utc: datetime | None = None,
     ) -> dict[int, dict[str, Any]]:
         """Workflow-run aggregates per campaign (counts + disposition samples)."""
         if not campaign_ids:

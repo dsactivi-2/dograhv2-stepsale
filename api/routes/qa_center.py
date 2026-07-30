@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from datetime import datetime, time
-from typing import Optional
 from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -43,7 +42,9 @@ def _parse_range(from_date: str, to_date: str, timezone: str):
     try:
         tz = ZoneInfo(timezone)
     except Exception as exc:
-        raise HTTPException(status_code=400, detail=f"Invalid timezone: {timezone}") from exc
+        raise HTTPException(
+            status_code=400, detail=f"Invalid timezone: {timezone}"
+        ) from exc
     try:
         start = datetime.combine(
             datetime.strptime(from_date, "%Y-%m-%d").date(), time.min, tzinfo=tz
@@ -60,7 +61,7 @@ def _parse_range(from_date: str, to_date: str, timezone: str):
     return start.astimezone(ZoneInfo("UTC")), end.astimezone(ZoneInfo("UTC"))
 
 
-def _parse_problem_tags(raw: Optional[str]) -> list[str]:
+def _parse_problem_tags(raw: str | None) -> list[str]:
     if not raw or not raw.strip():
         return list(DEFAULT_PROBLEM_TAGS)
     return [t.strip() for t in raw.split(",") if t.strip()]
@@ -117,10 +118,10 @@ async def qa_center_summary(
     from_date: str = Query(..., description="YYYY-MM-DD"),
     to_date: str = Query(..., description="YYYY-MM-DD"),
     timezone: str = Query("UTC"),
-    workflow_id: Optional[int] = Query(None),
-    campaign_id: Optional[int] = Query(None),
+    workflow_id: int | None = Query(None),
+    campaign_id: int | None = Query(None),
     max_score: float = Query(DEFAULT_MAX_SCORE, ge=0, le=100),
-    problem_tags: Optional[str] = Query(
+    problem_tags: str | None = Query(
         None, description="Comma-separated problem tags (default: built-in set)"
     ),
     user: UserModel = Depends(get_user),
@@ -167,10 +168,10 @@ async def qa_center_queue(
     from_date: str = Query(...),
     to_date: str = Query(...),
     timezone: str = Query("UTC"),
-    workflow_id: Optional[int] = Query(None),
-    campaign_id: Optional[int] = Query(None),
+    workflow_id: int | None = Query(None),
+    campaign_id: int | None = Query(None),
     max_score: float = Query(DEFAULT_MAX_SCORE, ge=0, le=100),
-    problem_tags: Optional[str] = Query(None),
+    problem_tags: str | None = Query(None),
     only_needs_review: bool = Query(True),
     page: int = Query(1, ge=1),
     limit: int = Query(50, ge=1, le=200),
@@ -231,7 +232,7 @@ async def qa_center_queue(
 async def qa_center_run_detail(
     run_id: int,
     max_score: float = Query(DEFAULT_MAX_SCORE, ge=0, le=100),
-    problem_tags: Optional[str] = Query(None),
+    problem_tags: str | None = Query(None),
     user: UserModel = Depends(get_user),
 ) -> QaCenterDetailResponse:
     org_id = _require_org(user)
@@ -241,9 +242,10 @@ async def qa_center_run_detail(
     tags = _parse_problem_tags(problem_tags)
     workflow_name = ""
     try:
-        workflow_name = await db_client.get_workflow_name(
-            run.workflow_id, organization_id=org_id
-        ) or ""
+        workflow_name = (
+            await db_client.get_workflow_name(run.workflow_id, organization_id=org_id)
+            or ""
+        )
     except Exception:
         workflow_name = ""
     gathered = run.gathered_context or {}
@@ -307,9 +309,10 @@ async def qa_center_override(
         duration_f = None
     workflow_name = ""
     try:
-        workflow_name = await db_client.get_workflow_name(
-            run.workflow_id, organization_id=org_id
-        ) or ""
+        workflow_name = (
+            await db_client.get_workflow_name(run.workflow_id, organization_id=org_id)
+            or ""
+        )
     except Exception:
         pass
     row = build_qa_center_row(
@@ -347,7 +350,8 @@ async def qa_center_rerun(
         raise HTTPException(status_code=404, detail="Workflow run not found")
     if not run.is_completed:
         raise HTTPException(
-            status_code=400, detail="Run is not completed — QA re-run only after completion"
+            status_code=400,
+            detail="Run is not completed — QA re-run only after completion",
         )
     try:
         from api.tasks.arq import enqueue_job

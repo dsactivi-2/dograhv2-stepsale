@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections import Counter
-from typing import Any, Optional
+from typing import Any
 
 from api.schemas.outcomes import QaRunOutcome
 from api.schemas.qa_center import (
@@ -54,7 +54,7 @@ COMPLIANCE_FAIL_TAG_PATTERNS: list[tuple[str, str, str]] = [
 DEFAULT_MAX_SCORE = 6.0  # default QA score scale is 1–10
 
 
-def _coerce_bool(value: Any) -> Optional[bool]:
+def _coerce_bool(value: Any) -> bool | None:
     if value is None:
         return None
     if isinstance(value, bool):
@@ -78,14 +78,18 @@ def _flag(
     detail: str = "",
 ) -> ComplianceFlag:
     return ComplianceFlag(
-        key=key, label=label, status=status, source=source, detail=detail  # type: ignore[arg-type]
+        key=key,
+        label=label,
+        status=status,
+        source=source,
+        detail=detail,  # type: ignore[arg-type]
     )
 
 
 def extract_compliance_flags(
     qa: QaRunOutcome,
-    override: Optional[QaManualOverrideRecord] = None,
-    annotations: Optional[dict[str, Any]] = None,
+    override: QaManualOverrideRecord | None = None,
+    annotations: dict[str, Any] | None = None,
 ) -> list[ComplianceFlag]:
     """Infer compliance flags from override, raw node fields, and problem tags."""
     by_key: dict[str, ComplianceFlag] = {}
@@ -124,14 +128,20 @@ def extract_compliance_flags(
                 label = dict(COMPLIANCE_FIELD_CATALOG).get(key, key)
                 # Only set fail if not already pass from raw field with higher confidence
                 existing = by_key.get(key)
-                if existing and existing.status == "pass" and existing.source == "raw_field":
+                if (
+                    existing
+                    and existing.status == "pass"
+                    and existing.source == "raw_field"
+                ):
                     continue
                 by_key[key] = _flag(key, label, "fail", "tag", detail=f"tag={tag}")
 
     # 4) Manual override wins
     if override and override.compliance_flags:
         for key, val in override.compliance_flags.items():
-            label = dict(COMPLIANCE_FIELD_CATALOG).get(key, key.replace("_", " ").title())
+            label = dict(COMPLIANCE_FIELD_CATALOG).get(
+                key, key.replace("_", " ").title()
+            )
             if val is True:
                 by_key[key] = _flag(key, label, "pass", "override")
             elif val is False:
@@ -148,7 +158,7 @@ def extract_compliance_flags(
 
 def review_reasons(
     *,
-    effective_score: Optional[float],
+    effective_score: float | None,
     effective_tags: list[str],
     compliance_flags: list[ComplianceFlag],
     max_score: float,
@@ -182,18 +192,20 @@ def build_qa_center_row(
     is_completed: bool,
     disposition: str,
     phone_number: str,
-    duration_seconds: Optional[float],
+    duration_seconds: float | None,
     annotations: dict[str, Any] | None,
     max_score: float = DEFAULT_MAX_SCORE,
-    problem_tags: Optional[list[str]] = None,
-    campaign_id: Optional[int] = None,
+    problem_tags: list[str] | None = None,
+    campaign_id: int | None = None,
 ) -> QaCenterRunRow:
     qa = normalize_run_qa(run_id, annotations, workflow_id)
     override = read_override(annotations)
     problem = problem_tags or DEFAULT_PROBLEM_TAGS
 
     effective_score = (
-        override.overall_score if override and override.overall_score is not None else qa.overall_score
+        override.overall_score
+        if override and override.overall_score is not None
+        else qa.overall_score
     )
     effective_sentiment = (
         override.sentiment if override and override.sentiment else qa.sentiment
@@ -202,9 +214,7 @@ def build_qa_center_row(
         effective_tags = list(override.tags)
     else:
         effective_tags = list(qa.tags)
-    effective_summary = (
-        override.summary if override and override.summary else ""
-    )
+    effective_summary = override.summary if override and override.summary else ""
     if not effective_summary and qa.nodes:
         # first non-empty node summary
         for n in qa.nodes:
@@ -254,7 +264,7 @@ def build_qa_center_row(
     )
 
 
-def _score_bucket(score: Optional[float]) -> str:
+def _score_bucket(score: float | None) -> str:
     if score is None:
         return "unknown"
     if score <= 3:
@@ -270,7 +280,7 @@ def summarize_qa_center(
     rows: list[QaCenterRunRow],
     *,
     max_score: float = DEFAULT_MAX_SCORE,
-    problem_tags: Optional[list[str]] = None,
+    problem_tags: list[str] | None = None,
 ) -> dict[str, Any]:
     problem = problem_tags or DEFAULT_PROBLEM_TAGS
     problem_set = {t.upper() for t in problem}
@@ -344,9 +354,7 @@ def summarize_qa_center(
         "override_count": override_count,
         "needs_review_count": needs_review,
         "compliance_fail_runs": compliance_fail_runs,
-        "top_tags": [
-            TagCount(tag=t, count=c) for t, c in tag_counts.most_common(25)
-        ],
+        "top_tags": [TagCount(tag=t, count=c) for t, c in tag_counts.most_common(25)],
         "sentiment_distribution": sentiment_distribution,
         "score_distribution": score_distribution,
         "compliance_summary": compliance_summary,

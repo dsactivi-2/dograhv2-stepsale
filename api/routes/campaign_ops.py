@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from datetime import datetime, time
-from typing import Optional
 from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -42,7 +41,9 @@ def _parse_range(from_date: str, to_date: str, timezone: str):
     try:
         tz = ZoneInfo(timezone)
     except Exception as exc:
-        raise HTTPException(status_code=400, detail=f"Invalid timezone: {timezone}") from exc
+        raise HTTPException(
+            status_code=400, detail=f"Invalid timezone: {timezone}"
+        ) from exc
     try:
         start = datetime.combine(
             datetime.strptime(from_date, "%Y-%m-%d").date(), time.min, tzinfo=tz
@@ -102,8 +103,8 @@ async def campaign_ops_summary(
     from_date: str = Query(..., description="YYYY-MM-DD"),
     to_date: str = Query(..., description="YYYY-MM-DD"),
     timezone: str = Query("UTC"),
-    campaign_id: Optional[int] = Query(None),
-    workflow_id: Optional[int] = Query(None),
+    campaign_id: int | None = Query(None),
+    workflow_id: int | None = Query(None),
     user: UserModel = Depends(get_user),
 ) -> CampaignOpsSummary:
     org_id = _require_org(user)
@@ -212,9 +213,7 @@ async def campaign_ops_summary(
                 runs_total=int(rstat.get("runs_total") or 0),
                 runs_completed=int(rstat.get("runs_completed") or 0),
                 runs_connected=connected,
-                disposition_distribution=[
-                    DispositionBucket(**d) for d in dist
-                ],
+                disposition_distribution=[DispositionBucket(**d) for d in dist],
                 retry=retry,
                 circuit_breaker=cb,
                 recent_logs=recent_logs,
@@ -222,9 +221,7 @@ async def campaign_ops_summary(
         )
 
     dispositioned = sum(
-        1
-        for d in all_dispositions
-        if d and str(d).upper() not in {"UNKNOWN", ""}
+        1 for d in all_dispositions if d and str(d).upper() not in {"UNKNOWN", ""}
     )
     funnel = [
         FunnelStage(**s)

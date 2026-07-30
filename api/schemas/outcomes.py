@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Literal, Optional
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
@@ -13,11 +13,11 @@ class QaNodeOutcome(BaseModel):
 
     node_id: str
     node_name: str = ""
-    score: Optional[float] = None
+    score: float | None = None
     tags: list[str] = Field(default_factory=list)
     summary: str = ""
-    sentiment: Optional[str] = None  # positive|neutral|negative|…
-    error: Optional[str] = None
+    sentiment: str | None = None  # positive|neutral|negative|…
+    error: str | None = None
     raw: dict[str, Any] = Field(default_factory=dict)
 
 
@@ -26,10 +26,10 @@ class QaRunOutcome(BaseModel):
 
     schema_version: Literal[1] = 1
     run_id: int
-    workflow_id: Optional[int] = None
+    workflow_id: int | None = None
     has_qa: bool = False
-    overall_score: Optional[float] = None
-    sentiment: Optional[str] = None
+    overall_score: float | None = None
+    sentiment: str | None = None
     tags: list[str] = Field(default_factory=list)
     nodes: list[QaNodeOutcome] = Field(default_factory=list)
     errors: list[str] = Field(default_factory=list)
@@ -40,14 +40,14 @@ class OutcomeRunRow(BaseModel):
     run_id: int
     workflow_id: int
     workflow_name: str = ""
-    created_at: Optional[datetime] = None
+    created_at: datetime | None = None
     is_completed: bool = False
     disposition: str = "UNKNOWN"
     phone_number: str = ""
-    duration_seconds: Optional[float] = None
+    duration_seconds: float | None = None
     call_tags: list[str] = Field(default_factory=list)
     qa: QaRunOutcome
-    campaign_id: Optional[int] = None
+    campaign_id: int | None = None
 
 
 class AggregationSampleMeta(BaseModel):
@@ -57,26 +57,26 @@ class AggregationSampleMeta(BaseModel):
     sampled_runs: int = 0
     sample_limit: int = 0
     truncated: bool = False
-    truncation_note: Optional[str] = None
+    truncation_note: str | None = None
 
 
 class OutcomesSummaryResponse(BaseModel):
     from_date: str
     to_date: str
     timezone: str
-    workflow_id: Optional[int] = None
-    campaign_id: Optional[int] = None
+    workflow_id: int | None = None
+    campaign_id: int | None = None
     total_runs: int
     completed_runs: int
     disposition_distribution: list[dict[str, Any]]
     qa_coverage: dict[str, Any]
-    average_qa_score: Optional[float] = None
+    average_qa_score: float | None = None
     top_qa_tags: list[dict[str, Any]]
     total_matching_runs: int = 0
     sampled_runs: int = 0
     sample_limit: int = 0
     truncated: bool = False
-    truncation_note: Optional[str] = None
+    truncation_note: str | None = None
 
 
 class OutcomesListResponse(BaseModel):

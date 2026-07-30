@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 from sqlalchemy import func, select
 
@@ -17,8 +17,8 @@ class OutcomesClient(BaseDBClient):
         organization_id: int,
         start_utc: datetime,
         end_utc: datetime,
-        workflow_id: Optional[int] = None,
-        campaign_id: Optional[int] = None,
+        workflow_id: int | None = None,
+        campaign_id: int | None = None,
         page: int = 1,
         limit: int = 50,
     ) -> tuple[list[WorkflowRunModel], int]:
@@ -60,8 +60,8 @@ class OutcomesClient(BaseDBClient):
         organization_id: int,
         start_utc: datetime,
         end_utc: datetime,
-        workflow_id: Optional[int] = None,
-        campaign_id: Optional[int] = None,
+        workflow_id: int | None = None,
+        campaign_id: int | None = None,
     ) -> int:
         async with self.async_session() as session:
             filters = [
@@ -86,8 +86,8 @@ class OutcomesClient(BaseDBClient):
         organization_id: int,
         start_utc: datetime,
         end_utc: datetime,
-        workflow_id: Optional[int] = None,
-        campaign_id: Optional[int] = None,
+        workflow_id: int | None = None,
+        campaign_id: int | None = None,
         max_rows: int = 5000,
     ) -> list[dict[str, Any]]:
         """Lightweight rows for aggregation (disposition + annotations)."""

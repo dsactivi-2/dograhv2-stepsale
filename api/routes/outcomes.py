@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from datetime import datetime, time
-from typing import Optional
 from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -33,10 +32,16 @@ def _parse_range(from_date: str, to_date: str, timezone: str):
     try:
         tz = ZoneInfo(timezone)
     except Exception as exc:
-        raise HTTPException(status_code=400, detail=f"Invalid timezone: {timezone}") from exc
+        raise HTTPException(
+            status_code=400, detail=f"Invalid timezone: {timezone}"
+        ) from exc
     try:
-        start = datetime.combine(datetime.strptime(from_date, "%Y-%m-%d").date(), time.min, tzinfo=tz)
-        end = datetime.combine(datetime.strptime(to_date, "%Y-%m-%d").date(), time.max, tzinfo=tz)
+        start = datetime.combine(
+            datetime.strptime(from_date, "%Y-%m-%d").date(), time.min, tzinfo=tz
+        )
+        end = datetime.combine(
+            datetime.strptime(to_date, "%Y-%m-%d").date(), time.max, tzinfo=tz
+        )
     except ValueError as exc:
         raise HTTPException(
             status_code=400, detail="from_date/to_date must be YYYY-MM-DD"
@@ -87,8 +92,8 @@ async def outcomes_summary(
     from_date: str = Query(..., description="YYYY-MM-DD"),
     to_date: str = Query(..., description="YYYY-MM-DD"),
     timezone: str = Query("UTC", description="IANA timezone"),
-    workflow_id: Optional[int] = Query(None),
-    campaign_id: Optional[int] = Query(None),
+    workflow_id: int | None = Query(None),
+    campaign_id: int | None = Query(None),
     user: UserModel = Depends(get_user),
 ) -> OutcomesSummaryResponse:
     org_id = _require_org(user)
@@ -132,7 +137,7 @@ async def outcomes_runs(
     from_date: str = Query(...),
     to_date: str = Query(...),
     timezone: str = Query("UTC"),
-    workflow_id: Optional[int] = Query(None),
+    workflow_id: int | None = Query(None),
     page: int = Query(1, ge=1),
     limit: int = Query(50, ge=1, le=200),
     user: UserModel = Depends(get_user),

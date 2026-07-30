@@ -1,5 +1,5 @@
 from datetime import datetime, time
-from typing import Any, Dict, List, Optional
+from typing import Any
 from zoneinfo import ZoneInfo
 
 from api.db import db_client
@@ -11,8 +11,8 @@ class DailyReportService:
         organization_id: int,
         date: str,
         timezone: str,
-        workflow_id: Optional[int] = None,
-    ) -> Dict[str, Any]:
+        workflow_id: int | None = None,
+    ) -> dict[str, Any]:
         """
         Get daily report for a specific date and timezone.
 
@@ -62,8 +62,14 @@ class DailyReportService:
             disposition = (run.get("gathered_context") or {}).get(
                 "mapped_call_disposition"
             )
-            wid = int(run["workflow_id"]) if run.get("workflow_id") is not None else None
-            tax = tax_by_workflow.get(wid) if wid is not None else normalize_taxonomy(None)
+            wid = (
+                int(run["workflow_id"]) if run.get("workflow_id") is not None else None
+            )
+            tax = (
+                tax_by_workflow.get(wid)
+                if wid is not None
+                else normalize_taxonomy(None)
+            )
             return is_success_disposition(tax, disposition)  # type: ignore[arg-type]
 
         # Calculate metrics
@@ -160,9 +166,11 @@ class DailyReportService:
                     "range_end": bucket_data["range_end"],
                     "count": bucket_data["count"],
                     "percentage": round(
-                        (bucket_data["count"] / total_calls_with_duration * 100)
-                        if total_calls_with_duration > 0
-                        else 0,
+                        (
+                            (bucket_data["count"] / total_calls_with_duration * 100)
+                            if total_calls_with_duration > 0
+                            else 0
+                        ),
                         2,
                     ),
                 }
@@ -183,7 +191,7 @@ class DailyReportService:
 
     async def get_workflows_for_organization(
         self, organization_id: int
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Get all workflows for an organization.
         """
@@ -196,8 +204,8 @@ class DailyReportService:
         organization_id: int,
         date: str,
         timezone: str,
-        workflow_id: Optional[int] = None,
-    ) -> List[Dict[str, Any]]:
+        workflow_id: int | None = None,
+    ) -> list[dict[str, Any]]:
         """
         Get detailed workflow runs for CSV export.
 

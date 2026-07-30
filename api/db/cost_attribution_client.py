@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 from sqlalchemy import func, select
 
@@ -17,8 +17,8 @@ class CostAttributionClient(BaseDBClient):
         organization_id: int,
         start_utc: datetime,
         end_utc: datetime,
-        workflow_id: Optional[int] = None,
-        campaign_id: Optional[int] = None,
+        workflow_id: int | None = None,
+        campaign_id: int | None = None,
     ) -> int:
         async with self.async_session() as session:
             filters = [
@@ -43,8 +43,8 @@ class CostAttributionClient(BaseDBClient):
         organization_id: int,
         start_utc: datetime,
         end_utc: datetime,
-        workflow_id: Optional[int] = None,
-        campaign_id: Optional[int] = None,
+        workflow_id: int | None = None,
+        campaign_id: int | None = None,
         max_rows: int = 10000,
     ) -> list[dict[str, Any]]:
         """Lightweight run rows with cost_info / usage_info for aggregation."""
@@ -96,9 +96,7 @@ class CostAttributionClient(BaseDBClient):
                         ),
                         "campaign_id": r.campaign_id,
                         "campaign_name": r.campaign_name
-                        or (
-                            f"Campaign {r.campaign_id}" if r.campaign_id else None
-                        ),
+                        or (f"Campaign {r.campaign_id}" if r.campaign_id else None),
                         "cost_info": r.cost_info or {},
                         "usage_info": r.usage_info or {},
                         "is_completed": bool(r.is_completed),
