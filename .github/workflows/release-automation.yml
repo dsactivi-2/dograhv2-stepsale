@@ -1,9 +1,10 @@
 name: Release Please
 
+# Disabled auto-run on this stepsale fork: full upstream history makes
+# release-please fail (invalid previous_tag / unparsable commits).
+# Re-enable on: push to main when you want automated releases here.
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -16,9 +17,6 @@ jobs:
     steps:
       - uses: googleapis/release-please-action@v4
         with:
-          # Config files location
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
-          # Prefer dedicated PAT if set; otherwise default Actions token
-          # (fixes empty forks without RELEASE_PLEASE_TOKEN secret).
           token: ${{ secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}
