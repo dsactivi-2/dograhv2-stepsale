@@ -14,6 +14,8 @@ export interface LocalUser extends BaseUser {
   organizationId?: string;
   displayName?: string;
   provider_id?: string;
+  /** Present when backend marks the local account as superuser */
+  is_superuser?: boolean;
 }
 
 // Union type for all user types

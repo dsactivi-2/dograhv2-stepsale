@@ -412,7 +412,7 @@ export function AppSidebar() {
 
       {/* Team switcher — sits under the brand so the active workspace is
           always visible. Renders nothing when the user has ≤1 org. */}
-      <SidebarTeamSwitcher isCollapsed={isCollapsed} />
+      <SidebarTeamSwitcher />
 
       <SidebarContent className={cn("py-3", isCollapsed ? "px-1.5" : "px-2")}>
         {NAV_SECTIONS.map((section, idx) => (

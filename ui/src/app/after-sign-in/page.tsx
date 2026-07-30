@@ -35,6 +35,15 @@ export default async function AfterSignInPage() {
     try {
         const accessToken = await getServerAccessToken();
         if (accessToken) {
+            // Local OSS superuser → platform admin UI (same as Stack path via getRedirectUrl)
+            if (authProvider === 'local') {
+                const redirectUrl = await getRedirectUrl(accessToken, []);
+                if (redirectUrl === '/superadmin') {
+                    logger.debug('[AfterSignInPage] Local superuser → /superadmin');
+                    redirect('/superadmin');
+                }
+            }
+
             const countResponse = await getWorkflowCountApiV1WorkflowCountGet({
                 headers: {
                     Authorization: `Bearer ${accessToken}`,

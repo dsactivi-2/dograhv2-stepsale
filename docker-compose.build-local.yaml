@@ -1,0 +1,32 @@
+# LOCAL TEST ONLY — builds api/ui from this checkout (main + stepsales merged locally).
+# Does not push anything to GitHub. Use with COMPOSE_PROJECT_NAME=dograhstepsaleslocal
+# so volumes/networks stay isolated from other Dograh installs.
+#
+#   docker compose -p dograhstepsaleslocal \
+#     -f docker-compose.yaml -f docker-compose.build-local.yaml up -d --build
+#
+# Tear down (keep code):
+#   docker compose -p dograhstepsaleslocal -f docker-compose.yaml -f docker-compose.build-local.yaml down -v
+#
+# Delete everything local:
+#   cd .. && rm -rf dograhV2-stepsales-local
+#   docker compose -p dograhstepsaleslocal down -v --rmi local 2>/dev/null || true
+
+services:
+  api:
+    image: dograh-stepsales-local-api:test
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    pull_policy: never
+
+  ui:
+    image: dograh-stepsales-local-ui:test
+    build:
+      context: .
+      dockerfile: ui/Dockerfile
+    pull_policy: never
+    environment:
+      # http://localhost — browsers drop Secure cookies; keep false for local OSS
+      COOKIE_SECURE: "false"
+      NODE_ENV: "oss"

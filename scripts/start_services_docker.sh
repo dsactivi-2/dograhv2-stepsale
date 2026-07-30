@@ -27,7 +27,9 @@ fi
 ### 2) Run migrations
 ###############################################################################
 
-alembic -c "$BASE_DIR/api/alembic.ini" upgrade head
+# Local fork may have multiple Alembic heads (upstream + stepsales chain).
+# `upgrade heads` applies all head lineages on a fresh DB.
+alembic -c "$BASE_DIR/api/alembic.ini" upgrade heads
 
 ###############################################################################
 ### 3) Signal handling — forward TERM/INT to children for clean docker stop

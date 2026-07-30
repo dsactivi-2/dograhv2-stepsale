@@ -27,3 +27,7 @@ node_modules/
 .superpowers/
 docs/superpowers/
 .gstack/
+
+# local test artifacts
+local-*.log
+local-compose-*.log
