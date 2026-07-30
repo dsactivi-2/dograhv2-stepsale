@@ -543,4 +543,3 @@ class WorkflowRunClient(BaseDBClient):
                 )
             )
             return int(result.scalar() or 0)
-

@@ -144,9 +144,7 @@ def run_assertions_on_transcript(
             "gathered_key_equals",
         ):
             results.append(
-                evaluate_assertion(
-                    assertion, assistant_text=assistant_text, gathered=g
-                )
+                evaluate_assertion(assertion, assistant_text=assistant_text, gathered=g)
             )
         else:
             results.append(
@@ -185,7 +183,9 @@ def score_voice_run(
         transcript=transcript,
         gathered=gathered_context,
     )
-    flat = [a.model_dump() if hasattr(a, "model_dump") else a for a in assertion_results]
+    flat = [
+        a.model_dump() if hasattr(a, "model_dump") else a for a in assertion_results
+    ]
     total_a = len(flat)
     passed_a = sum(1 for a in flat if a.get("passed"))
     assertion_pct = (passed_a / total_a * 100.0) if total_a else None

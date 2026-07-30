@@ -423,9 +423,7 @@ class StepsalesService:
             status="pending",
         )
         self.session.add(row)
-        await self._set_lead_status(
-            lead, "payment_pending", next_step="await_payment"
-        )
+        await self._set_lead_status(lead, "payment_pending", next_step="await_payment")
         offer.status = "payment_pending"
         await self._log_event(
             "send_payment_link",

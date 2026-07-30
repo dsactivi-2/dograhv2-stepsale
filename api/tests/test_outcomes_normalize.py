@@ -44,7 +44,10 @@ def test_normalize_per_node_scores_and_tags():
     assert "good_open" in qa.tags
     assert "price_objection" in qa.tags
     assert "qa_node_1" in qa.source_keys
-    assert qa.sentiment in {"positive", "neutral"}  # majority of two distinct = first most_common order
+    assert qa.sentiment in {
+        "positive",
+        "neutral",
+    }  # majority of two distinct = first most_common order
 
 
 def test_normalize_dict_form_tags():

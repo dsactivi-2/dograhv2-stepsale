@@ -1656,7 +1656,9 @@ class ScriptLibraryEntryModel(Base):
         Integer, ForeignKey("workflows.id", ondelete="CASCADE"), nullable=False
     )
     definition_id = Column(
-        Integer, ForeignKey("workflow_definitions.id", ondelete="SET NULL"), nullable=True
+        Integer,
+        ForeignKey("workflow_definitions.id", ondelete="SET NULL"),
+        nullable=True,
     )
     title = Column(String(255), nullable=False)
     description = Column(Text, nullable=False, default="")
@@ -1712,7 +1714,10 @@ class TrainingModuleModel(Base):
     success_codes = Column(JSON, nullable=False, default=list)
     tags = Column(JSON, nullable=False, default=list)
     difficulty = Column(
-        String(32), nullable=False, default="beginner", server_default=text("'beginner'")
+        String(32),
+        nullable=False,
+        default="beginner",
+        server_default=text("'beginner'"),
     )
     pass_score = Column(Float, nullable=False, default=70.0)
     content = Column(JSON, nullable=False, default=dict)
@@ -1744,7 +1749,9 @@ class TrainingAttemptModel(Base):
     module_id = Column(
         Integer, ForeignKey("training_modules.id", ondelete="CASCADE"), nullable=False
     )
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
     mode = Column(String(32), nullable=False)
     score = Column(Float, nullable=False, default=0.0)
     passed = Column(Boolean, nullable=False, default=False)

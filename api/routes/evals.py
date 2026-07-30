@@ -150,7 +150,10 @@ async def run_text_eval(
                 run_id=workflow_run.id,
                 text_session=text_session,
             )
-        except (TextChatSessionRevisionConflictError, TextChatSessionExecutionError) as e:
+        except (
+            TextChatSessionRevisionConflictError,
+            TextChatSessionExecutionError,
+        ) as e:
             logger.warning(f"eval session init issue: {e}")
 
         return {"workflow_run_id": workflow_run.id}
@@ -203,9 +206,7 @@ async def voice_score_run(
 ) -> VoiceScoreRunResponse:
     """Score an existing voice (or any) run from transcript + disposition + QA."""
     org_id = _require_org(user)
-    run = await db_client.get_workflow_run(
-        body.workflow_run_id, organization_id=org_id
-    )
+    run = await db_client.get_workflow_run(body.workflow_run_id, organization_id=org_id)
     if not run:
         raise HTTPException(status_code=404, detail="Workflow run not found")
 
@@ -394,4 +395,3 @@ async def finalize_voice_eval_session(
         scenario_name=eval_meta.get("scenario_name"),
         signaling_path=f"/api/v1/ws/signaling/{run.workflow_id}/{run.id}",
     )
-

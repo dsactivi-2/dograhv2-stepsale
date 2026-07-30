@@ -173,9 +173,7 @@ async def check_payment_status(
     payment_reference: str,
     user: UserModel = Depends(get_user),
 ) -> PaymentStatusResponse:
-    result = await db_client.check_payment_status(
-        _require_org(user), payment_reference
-    )
+    result = await db_client.check_payment_status(_require_org(user), payment_reference)
     return PaymentStatusResponse(**result)
 
 

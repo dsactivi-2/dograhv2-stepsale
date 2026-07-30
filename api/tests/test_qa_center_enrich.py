@@ -132,7 +132,9 @@ def test_summarize_aggregates():
             annotations=_qa_annotations(score=score, sentiment=sent),
             max_score=6,
         )
-        for i, (score, sent) in enumerate([(3, "negative"), (9, "positive"), (5, "neutral")], start=1)
+        for i, (score, sent) in enumerate(
+            [(3, "negative"), (9, "positive"), (5, "neutral")], start=1
+        )
     ]
     s = summarize_qa_center(rows, max_score=6)
     assert s["total_runs"] == 3

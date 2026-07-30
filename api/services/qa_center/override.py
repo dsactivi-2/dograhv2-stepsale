@@ -12,7 +12,9 @@ AUDIT_KEY = "qa_override_audit"
 MAX_AUDIT_ENTRIES = 50
 
 
-def read_override(annotations: dict[str, Any] | None) -> Optional[QaManualOverrideRecord]:
+def read_override(
+    annotations: dict[str, Any] | None,
+) -> Optional[QaManualOverrideRecord]:
     ann = annotations if isinstance(annotations, dict) else {}
     raw = ann.get(OVERRIDE_KEY)
     if not isinstance(raw, dict):
@@ -48,9 +50,7 @@ def apply_manual_override(
     previous_snapshot: Optional[dict[str, Any]] = None
     if isinstance(previous_raw, dict):
         # Drop nested previous to avoid unbounded nesting depth
-        previous_snapshot = {
-            k: v for k, v in previous_raw.items() if k != "previous"
-        }
+        previous_snapshot = {k: v for k, v in previous_raw.items() if k != "previous"}
 
     now = datetime.now(timezone.utc).isoformat()
     record = QaManualOverrideRecord(

@@ -33,7 +33,9 @@ def test_storage_roundtrip():
         {
             "disposition_codes": ["A", "B"],
             "success_codes": ["A"],
-            "code_meta": {"A": {"label": "Alpha", "category": "success", "description": ""}},
+            "code_meta": {
+                "A": {"label": "Alpha", "category": "success", "description": ""}
+            },
         }
     )
     stored = taxonomy_to_storage(tax)

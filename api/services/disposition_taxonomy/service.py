@@ -13,9 +13,7 @@ def normalize_taxonomy(raw: Any) -> DispositionTaxonomy:
         return DispositionTaxonomy()
     if isinstance(raw, list):
         codes = [str(x).strip() for x in raw if str(x).strip()]
-        meta = {
-            c: DispositionCodeMeta(label=c, category="other") for c in codes
-        }
+        meta = {c: DispositionCodeMeta(label=c, category="other") for c in codes}
         return DispositionTaxonomy(disposition_codes=codes, code_meta=meta)
     if not isinstance(raw, dict):
         return DispositionTaxonomy()

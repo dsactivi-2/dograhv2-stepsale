@@ -69,9 +69,7 @@ def upgrade() -> None:
             ["script_library_entries.id"],
             ondelete="SET NULL",
         ),
-        sa.ForeignKeyConstraint(
-            ["workflow_id"], ["workflows.id"], ondelete="SET NULL"
-        ),
+        sa.ForeignKeyConstraint(["workflow_id"], ["workflows.id"], ondelete="SET NULL"),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index("ix_training_modules_org", "training_modules", ["organization_id"])
@@ -112,9 +110,7 @@ def upgrade() -> None:
     op.create_index(
         "ix_training_attempts_org", "training_attempts", ["organization_id"]
     )
-    op.create_index(
-        "ix_training_attempts_module", "training_attempts", ["module_id"]
-    )
+    op.create_index("ix_training_attempts_module", "training_attempts", ["module_id"])
     op.create_index("ix_training_attempts_user", "training_attempts", ["user_id"])
     op.create_index(
         "ix_training_attempts_user_module",
