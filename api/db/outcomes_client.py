@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 from sqlalchemy import func, select
 
@@ -17,7 +17,8 @@ class OutcomesClient(BaseDBClient):
         organization_id: int,
         start_utc: datetime,
         end_utc: datetime,
-        workflow_id: Optional[int] = None,
+        workflow_id: int | None = None,
+        campaign_id: int | None = None,
         page: int = 1,
         limit: int = 50,
     ) -> tuple[list[WorkflowRunModel], int]:
@@ -30,6 +31,8 @@ class OutcomesClient(BaseDBClient):
             ]
             if workflow_id is not None:
                 filters.append(WorkflowRunModel.workflow_id == workflow_id)
+            if campaign_id is not None:
+                filters.append(WorkflowRunModel.campaign_id == campaign_id)
 
             count_q = (
                 select(func.count(WorkflowRunModel.id))
@@ -52,12 +55,39 @@ class OutcomesClient(BaseDBClient):
             runs = list(result.scalars().all())
             return runs, total
 
+    async def count_runs_for_summary(
+        self,
+        organization_id: int,
+        start_utc: datetime,
+        end_utc: datetime,
+        workflow_id: int | None = None,
+        campaign_id: int | None = None,
+    ) -> int:
+        async with self.async_session() as session:
+            filters = [
+                WorkflowModel.organization_id == organization_id,
+                WorkflowRunModel.created_at >= start_utc,
+                WorkflowRunModel.created_at <= end_utc,
+            ]
+            if workflow_id is not None:
+                filters.append(WorkflowRunModel.workflow_id == workflow_id)
+            if campaign_id is not None:
+                filters.append(WorkflowRunModel.campaign_id == campaign_id)
+            count_q = (
+                select(func.count(WorkflowRunModel.id))
+                .select_from(WorkflowRunModel)
+                .join(WorkflowModel, WorkflowRunModel.workflow_id == WorkflowModel.id)
+                .where(*filters)
+            )
+            return int((await session.execute(count_q)).scalar_one())
+
     async def list_runs_for_summary(
         self,
         organization_id: int,
         start_utc: datetime,
         end_utc: datetime,
-        workflow_id: Optional[int] = None,
+        workflow_id: int | None = None,
+        campaign_id: int | None = None,
         max_rows: int = 5000,
     ) -> list[dict[str, Any]]:
         """Lightweight rows for aggregation (disposition + annotations)."""
@@ -69,11 +99,14 @@ class OutcomesClient(BaseDBClient):
             ]
             if workflow_id is not None:
                 filters.append(WorkflowRunModel.workflow_id == workflow_id)
+            if campaign_id is not None:
+                filters.append(WorkflowRunModel.campaign_id == campaign_id)
 
             q = (
                 select(
                     WorkflowRunModel.id,
                     WorkflowRunModel.workflow_id,
+                    WorkflowRunModel.campaign_id,
                     WorkflowRunModel.is_completed,
                     WorkflowRunModel.gathered_context,
                     WorkflowRunModel.annotations,
@@ -94,6 +127,7 @@ class OutcomesClient(BaseDBClient):
                     {
                         "id": row.id,
                         "workflow_id": row.workflow_id,
+                        "campaign_id": row.campaign_id,
                         "workflow_name": row.workflow_name or "",
                         "is_completed": bool(row.is_completed),
                         "gathered_context": row.gathered_context or {},

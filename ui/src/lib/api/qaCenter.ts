@@ -105,6 +105,12 @@ export type QaCenterSummary = {
   }>;
   max_score_threshold: number;
   problem_tags: string[];
+  campaign_id?: number | null;
+  total_matching_runs?: number;
+  sampled_runs?: number;
+  sample_limit?: number;
+  truncated?: boolean;
+  truncation_note?: string | null;
 };
 
 export type QaCenterQueueResponse = {
@@ -114,6 +120,12 @@ export type QaCenterQueueResponse = {
   max_score_threshold: number;
   problem_tags: string[];
   runs: QaCenterRunRow[];
+  campaign_id?: number | null;
+  total_matching_runs?: number;
+  sampled_runs?: number;
+  sample_limit?: number;
+  truncated?: boolean;
+  truncation_note?: string | null;
 };
 
 export type QaCenterDetailResponse = {
@@ -141,6 +153,7 @@ export type QaCenterQuery = {
   to_date: string;
   timezone?: string;
   workflow_id?: number | null;
+  campaign_id?: number | null;
   max_score?: number;
   page?: number;
   limit?: number;
@@ -166,6 +179,7 @@ export async function fetchQaCenterSummary(
       timezone: q.timezone || "UTC",
       max_score: q.max_score ?? 6,
       ...(q.workflow_id != null ? { workflow_id: q.workflow_id } : {}),
+      ...(q.campaign_id != null ? { campaign_id: q.campaign_id } : {}),
     },
   });
   if (res.error) {
@@ -188,6 +202,7 @@ export async function fetchQaCenterQueue(
       page: q.page ?? 1,
       limit: q.limit ?? 50,
       ...(q.workflow_id != null ? { workflow_id: q.workflow_id } : {}),
+      ...(q.campaign_id != null ? { campaign_id: q.campaign_id } : {}),
     },
   });
   if (res.error) {

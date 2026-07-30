@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from datetime import datetime, time
-from typing import Optional
 from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -16,6 +15,7 @@ from api.schemas.outcomes import (
     OutcomesSummaryResponse,
     QaRunOutcome,
 )
+from api.services.aggregation_meta import sample_meta
 from api.services.auth.depends import get_user
 from api.services.outcomes.normalize import normalize_run_qa, summarize_outcomes
 
@@ -32,10 +32,16 @@ def _parse_range(from_date: str, to_date: str, timezone: str):
     try:
         tz = ZoneInfo(timezone)
     except Exception as exc:
-        raise HTTPException(status_code=400, detail=f"Invalid timezone: {timezone}") from exc
+        raise HTTPException(
+            status_code=400, detail=f"Invalid timezone: {timezone}"
+        ) from exc
     try:
-        start = datetime.combine(datetime.strptime(from_date, "%Y-%m-%d").date(), time.min, tzinfo=tz)
-        end = datetime.combine(datetime.strptime(to_date, "%Y-%m-%d").date(), time.max, tzinfo=tz)
+        start = datetime.combine(
+            datetime.strptime(from_date, "%Y-%m-%d").date(), time.min, tzinfo=tz
+        )
+        end = datetime.combine(
+            datetime.strptime(to_date, "%Y-%m-%d").date(), time.max, tzinfo=tz
+        )
     except ValueError as exc:
         raise HTTPException(
             status_code=400, detail="from_date/to_date must be YYYY-MM-DD"
@@ -86,25 +92,43 @@ async def outcomes_summary(
     from_date: str = Query(..., description="YYYY-MM-DD"),
     to_date: str = Query(..., description="YYYY-MM-DD"),
     timezone: str = Query("UTC", description="IANA timezone"),
-    workflow_id: Optional[int] = Query(None),
+    workflow_id: int | None = Query(None),
+    campaign_id: int | None = Query(None),
     user: UserModel = Depends(get_user),
 ) -> OutcomesSummaryResponse:
     org_id = _require_org(user)
     start_utc, end_utc = _parse_range(from_date, to_date, timezone)
+    sample_limit = 5000
+    total_matching = await db_client.count_runs_for_summary(
+        organization_id=org_id,
+        start_utc=start_utc,
+        end_utc=end_utc,
+        workflow_id=workflow_id,
+        campaign_id=campaign_id,
+    )
     raw_rows = await db_client.list_runs_for_summary(
         organization_id=org_id,
         start_utc=start_utc,
         end_utc=end_utc,
         workflow_id=workflow_id,
+        campaign_id=campaign_id,
+        max_rows=sample_limit,
     )
     normalized = [_row_from_db(r) for r in raw_rows]
     summary = summarize_outcomes(normalized)
+    meta = sample_meta(
+        total_matching=total_matching,
+        sampled=len(raw_rows),
+        sample_limit=sample_limit,
+    )
     return OutcomesSummaryResponse(
         from_date=from_date,
         to_date=to_date,
         timezone=timezone,
         workflow_id=workflow_id,
+        campaign_id=campaign_id,
         **summary,
+        **meta,
     )
 
 
@@ -113,7 +137,7 @@ async def outcomes_runs(
     from_date: str = Query(...),
     to_date: str = Query(...),
     timezone: str = Query("UTC"),
-    workflow_id: Optional[int] = Query(None),
+    workflow_id: int | None = Query(None),
     page: int = Query(1, ge=1),
     limit: int = Query(50, ge=1, le=200),
     user: UserModel = Depends(get_user),

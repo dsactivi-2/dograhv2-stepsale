@@ -3,22 +3,48 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 
 from api.db.base_client import BaseDBClient
 from api.db.models import CampaignModel, WorkflowModel, WorkflowRunModel
 
 
 class CostAttributionClient(BaseDBClient):
+    async def count_runs_for_cost_attribution(
+        self,
+        organization_id: int,
+        start_utc: datetime,
+        end_utc: datetime,
+        workflow_id: int | None = None,
+        campaign_id: int | None = None,
+    ) -> int:
+        async with self.async_session() as session:
+            filters = [
+                WorkflowModel.organization_id == organization_id,
+                WorkflowRunModel.created_at >= start_utc,
+                WorkflowRunModel.created_at <= end_utc,
+            ]
+            if workflow_id is not None:
+                filters.append(WorkflowRunModel.workflow_id == workflow_id)
+            if campaign_id is not None:
+                filters.append(WorkflowRunModel.campaign_id == campaign_id)
+            count_q = (
+                select(func.count(WorkflowRunModel.id))
+                .select_from(WorkflowRunModel)
+                .join(WorkflowModel, WorkflowRunModel.workflow_id == WorkflowModel.id)
+                .where(*filters)
+            )
+            return int((await session.execute(count_q)).scalar_one())
+
     async def list_runs_for_cost_attribution(
         self,
         organization_id: int,
         start_utc: datetime,
         end_utc: datetime,
-        workflow_id: Optional[int] = None,
-        campaign_id: Optional[int] = None,
+        workflow_id: int | None = None,
+        campaign_id: int | None = None,
         max_rows: int = 10000,
     ) -> list[dict[str, Any]]:
         """Lightweight run rows with cost_info / usage_info for aggregation."""
@@ -69,9 +95,8 @@ class CostAttributionClient(BaseDBClient):
                             else "No definition"
                         ),
                         "campaign_id": r.campaign_id,
-                        "campaign_name": r.campaign_name or (
-                            f"Campaign {r.campaign_id}" if r.campaign_id else None
-                        ),
+                        "campaign_name": r.campaign_name
+                        or (f"Campaign {r.campaign_id}" if r.campaign_id else None),
                         "cost_info": r.cost_info or {},
                         "usage_info": r.usage_info or {},
                         "is_completed": bool(r.is_completed),

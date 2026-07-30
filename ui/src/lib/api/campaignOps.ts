@@ -75,6 +75,11 @@ export type CampaignOpsSummary = {
   disposition_distribution: DispositionBucket[];
   totals: Record<string, number>;
   campaigns: CampaignOpsRow[];
+  total_matching_campaigns?: number;
+  sampled_campaigns?: number;
+  sample_limit?: number;
+  truncated?: boolean;
+  truncation_note?: string | null;
 };
 
 export type CampaignOpsQuery = {

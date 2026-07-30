@@ -32,7 +32,10 @@ def score_lead(payload: dict[str, Any]) -> int:
         score += 10
 
     timeline = (payload.get("timeline") or "").lower()
-    if any(token in timeline for token in ("sofort", "immediate", "1 week", "2 week", "woche", "asap")):
+    if any(
+        token in timeline
+        for token in ("sofort", "immediate", "1 week", "2 week", "woche", "asap")
+    ):
         score += 10
     elif any(token in timeline for token in ("month", "monat", "30")):
         score += 5

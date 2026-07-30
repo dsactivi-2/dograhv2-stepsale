@@ -183,9 +183,7 @@ def summarize_outcomes(runs: list[dict[str, Any]]) -> dict[str, Any]:
         }
         for d, c in disp_counts.most_common()
     ]
-    top_qa_tags = [
-        {"tag": t, "count": c} for t, c in tag_counts.most_common(20)
-    ]
+    top_qa_tags = [{"tag": t, "count": c} for t, c in tag_counts.most_common(20)]
     return {
         "total_runs": total,
         "completed_runs": completed,

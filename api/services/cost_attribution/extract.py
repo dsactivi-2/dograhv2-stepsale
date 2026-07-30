@@ -45,7 +45,9 @@ def extract_run_cost(
     if duration is None:
         duration = _as_float(cost.get("call_duration_seconds"))
 
-    has_cost = any(v is not None and v != 0 for v in (charge_usd, total_cost_usd, dograh_tokens))
+    has_cost = any(
+        v is not None and v != 0 for v in (charge_usd, total_cost_usd, dograh_tokens)
+    )
     # Also treat non-empty cost_info with zero values as "present but zero"
     if not has_cost and cost:
         has_cost = any(
@@ -190,7 +192,11 @@ def summarize_cost_rows(
         total_cost = round(b["_cost_sum"], 6) if b["_saw_cost"] else None
         total_charge = round(b["_charge_sum"], 6) if b["_saw_charge"] else None
         coverage = round(100.0 * b["runs_with_cost"] / rc, 2)
-        avg = round(total_cost / b["runs_with_cost"], 6) if total_cost is not None and b["runs_with_cost"] else None
+        avg = (
+            round(total_cost / b["runs_with_cost"], 6)
+            if total_cost is not None and b["runs_with_cost"]
+            else None
+        )
         out_buckets.append(
             {
                 **meta[gkey],

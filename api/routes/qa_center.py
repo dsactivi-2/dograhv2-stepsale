@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from datetime import datetime, time
-from typing import Optional
 from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -18,7 +17,9 @@ from api.schemas.qa_center import (
     QaManualOverridePayload,
     QaRerunResponse,
 )
+from api.services.aggregation_meta import sample_meta
 from api.services.auth.depends import get_user
+from api.services.auth.ops_permissions import require_ops_reviewer
 from api.services.qa_center.enrich import (
     DEFAULT_MAX_SCORE,
     DEFAULT_PROBLEM_TAGS,
@@ -41,7 +42,9 @@ def _parse_range(from_date: str, to_date: str, timezone: str):
     try:
         tz = ZoneInfo(timezone)
     except Exception as exc:
-        raise HTTPException(status_code=400, detail=f"Invalid timezone: {timezone}") from exc
+        raise HTTPException(
+            status_code=400, detail=f"Invalid timezone: {timezone}"
+        ) from exc
     try:
         start = datetime.combine(
             datetime.strptime(from_date, "%Y-%m-%d").date(), time.min, tzinfo=tz
@@ -58,7 +61,7 @@ def _parse_range(from_date: str, to_date: str, timezone: str):
     return start.astimezone(ZoneInfo("UTC")), end.astimezone(ZoneInfo("UTC"))
 
 
-def _parse_problem_tags(raw: Optional[str]) -> list[str]:
+def _parse_problem_tags(raw: str | None) -> list[str]:
     if not raw or not raw.strip():
         return list(DEFAULT_PROBLEM_TAGS)
     return [t.strip() for t in raw.split(",") if t.strip()]
@@ -78,10 +81,16 @@ def _row_from_db(
         duration_f = float(duration) if duration is not None else None
     except (TypeError, ValueError):
         duration_f = None
+    cid = r.get("campaign_id")
+    try:
+        cid_i = int(cid) if cid is not None else None
+    except (TypeError, ValueError):
+        cid_i = None
     return build_qa_center_row(
         run_id=int(r["id"]),
         workflow_id=int(r["workflow_id"]),
         workflow_name=r.get("workflow_name") or "",
+        campaign_id=cid_i,
         created_at=r.get("created_at"),
         is_completed=bool(r.get("is_completed")),
         disposition=gathered.get("mapped_call_disposition") or "UNKNOWN",
@@ -109,9 +118,10 @@ async def qa_center_summary(
     from_date: str = Query(..., description="YYYY-MM-DD"),
     to_date: str = Query(..., description="YYYY-MM-DD"),
     timezone: str = Query("UTC"),
-    workflow_id: Optional[int] = Query(None),
+    workflow_id: int | None = Query(None),
+    campaign_id: int | None = Query(None),
     max_score: float = Query(DEFAULT_MAX_SCORE, ge=0, le=100),
-    problem_tags: Optional[str] = Query(
+    problem_tags: str | None = Query(
         None, description="Comma-separated problem tags (default: built-in set)"
     ),
     user: UserModel = Depends(get_user),
@@ -119,21 +129,37 @@ async def qa_center_summary(
     org_id = _require_org(user)
     start_utc, end_utc = _parse_range(from_date, to_date, timezone)
     tags = _parse_problem_tags(problem_tags)
+    sample_limit = 5000
+    total_matching = await db_client.count_runs_for_summary(
+        organization_id=org_id,
+        start_utc=start_utc,
+        end_utc=end_utc,
+        workflow_id=workflow_id,
+        campaign_id=campaign_id,
+    )
     raw_rows = await db_client.list_runs_for_summary(
         organization_id=org_id,
         start_utc=start_utc,
         end_utc=end_utc,
         workflow_id=workflow_id,
-        max_rows=5000,
+        campaign_id=campaign_id,
+        max_rows=sample_limit,
     )
     rows = [_row_from_db(r, max_score=max_score, problem_tags=tags) for r in raw_rows]
     summary = summarize_qa_center(rows, max_score=max_score, problem_tags=tags)
+    meta = sample_meta(
+        total_matching=total_matching,
+        sampled=len(raw_rows),
+        sample_limit=sample_limit,
+    )
     return QaCenterSummary(
         from_date=from_date,
         to_date=to_date,
         timezone=timezone,
         workflow_id=workflow_id,
+        campaign_id=campaign_id,
         **summary,
+        **meta,
     )
 
 
@@ -142,9 +168,10 @@ async def qa_center_queue(
     from_date: str = Query(...),
     to_date: str = Query(...),
     timezone: str = Query("UTC"),
-    workflow_id: Optional[int] = Query(None),
+    workflow_id: int | None = Query(None),
+    campaign_id: int | None = Query(None),
     max_score: float = Query(DEFAULT_MAX_SCORE, ge=0, le=100),
-    problem_tags: Optional[str] = Query(None),
+    problem_tags: str | None = Query(None),
     only_needs_review: bool = Query(True),
     page: int = Query(1, ge=1),
     limit: int = Query(50, ge=1, le=200),
@@ -154,12 +181,21 @@ async def qa_center_queue(
     org_id = _require_org(user)
     start_utc, end_utc = _parse_range(from_date, to_date, timezone)
     tags = _parse_problem_tags(problem_tags)
+    sample_limit = 5000
+    total_matching = await db_client.count_runs_for_summary(
+        organization_id=org_id,
+        start_utc=start_utc,
+        end_utc=end_utc,
+        workflow_id=workflow_id,
+        campaign_id=campaign_id,
+    )
     raw_rows = await db_client.list_runs_for_summary(
         organization_id=org_id,
         start_utc=start_utc,
         end_utc=end_utc,
         workflow_id=workflow_id,
-        max_rows=5000,
+        campaign_id=campaign_id,
+        max_rows=sample_limit,
     )
     rows = [_row_from_db(r, max_score=max_score, problem_tags=tags) for r in raw_rows]
     if only_needs_review:
@@ -175,6 +211,11 @@ async def qa_center_queue(
     total = len(rows)
     offset = max(0, (page - 1) * limit)
     page_rows = rows[offset : offset + limit]
+    meta = sample_meta(
+        total_matching=total_matching,
+        sampled=len(raw_rows),
+        sample_limit=sample_limit,
+    )
     return QaCenterQueueResponse(
         total=total,
         page=page,
@@ -182,6 +223,8 @@ async def qa_center_queue(
         max_score_threshold=max_score,
         problem_tags=tags,
         runs=page_rows,
+        campaign_id=campaign_id,
+        **meta,
     )
 
 
@@ -189,7 +232,7 @@ async def qa_center_queue(
 async def qa_center_run_detail(
     run_id: int,
     max_score: float = Query(DEFAULT_MAX_SCORE, ge=0, le=100),
-    problem_tags: Optional[str] = Query(None),
+    problem_tags: str | None = Query(None),
     user: UserModel = Depends(get_user),
 ) -> QaCenterDetailResponse:
     org_id = _require_org(user)
@@ -199,9 +242,10 @@ async def qa_center_run_detail(
     tags = _parse_problem_tags(problem_tags)
     workflow_name = ""
     try:
-        workflow_name = await db_client.get_workflow_name(
-            run.workflow_id, organization_id=org_id
-        ) or ""
+        workflow_name = (
+            await db_client.get_workflow_name(run.workflow_id, organization_id=org_id)
+            or ""
+        )
     except Exception:
         workflow_name = ""
     gathered = run.gathered_context or {}
@@ -216,6 +260,7 @@ async def qa_center_run_detail(
         run_id=run.id,
         workflow_id=run.workflow_id,
         workflow_name=workflow_name,
+        campaign_id=getattr(run, "campaign_id", None),
         created_at=run.created_at,
         is_completed=bool(run.is_completed),
         disposition=gathered.get("mapped_call_disposition") or "UNKNOWN",
@@ -239,6 +284,7 @@ async def qa_center_override(
 ) -> QaCenterDetailResponse:
     """Save manual QA override (reviewer correction) with audit history."""
     org_id = _require_org(user)
+    await require_ops_reviewer(user)
     run = await db_client.get_workflow_run(run_id, organization_id=org_id)
     if run is None:
         raise HTTPException(status_code=404, detail="Workflow run not found")
@@ -263,15 +309,17 @@ async def qa_center_override(
         duration_f = None
     workflow_name = ""
     try:
-        workflow_name = await db_client.get_workflow_name(
-            run.workflow_id, organization_id=org_id
-        ) or ""
+        workflow_name = (
+            await db_client.get_workflow_name(run.workflow_id, organization_id=org_id)
+            or ""
+        )
     except Exception:
         pass
     row = build_qa_center_row(
         run_id=run.id,
         workflow_id=run.workflow_id,
         workflow_name=workflow_name,
+        campaign_id=getattr(run, "campaign_id", None),
         created_at=run.created_at,
         is_completed=bool(run.is_completed),
         disposition=gathered.get("mapped_call_disposition") or "UNKNOWN",
@@ -296,12 +344,14 @@ async def qa_center_rerun(
     Requires a running ARQ worker; returns ``unavailable`` if enqueue fails.
     """
     org_id = _require_org(user)
+    await require_ops_reviewer(user)
     run = await db_client.get_workflow_run(run_id, organization_id=org_id)
     if run is None:
         raise HTTPException(status_code=404, detail="Workflow run not found")
     if not run.is_completed:
         raise HTTPException(
-            status_code=400, detail="Run is not completed — QA re-run only after completion"
+            status_code=400,
+            detail="Run is not completed — QA re-run only after completion",
         )
     try:
         from api.tasks.arq import enqueue_job

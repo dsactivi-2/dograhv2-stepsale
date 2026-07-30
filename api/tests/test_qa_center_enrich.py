@@ -1,5 +1,6 @@
 """Unit tests for QA Center enrich + override (no DB)."""
 
+from api.schemas.qa_center import QaManualOverridePayload
 from api.services.outcomes.normalize import normalize_run_qa
 from api.services.qa_center.enrich import (
     build_qa_center_row,
@@ -7,7 +8,6 @@ from api.services.qa_center.enrich import (
     summarize_qa_center,
 )
 from api.services.qa_center.override import apply_manual_override, read_override
-from api.schemas.qa_center import QaManualOverridePayload
 
 
 def _qa_annotations(score=4, tags=None, sentiment="negative"):
@@ -132,7 +132,9 @@ def test_summarize_aggregates():
             annotations=_qa_annotations(score=score, sentiment=sent),
             max_score=6,
         )
-        for i, (score, sent) in enumerate([(3, "negative"), (9, "positive"), (5, "neutral")], start=1)
+        for i, (score, sent) in enumerate(
+            [(3, "negative"), (9, "positive"), (5, "neutral")], start=1
+        )
     ]
     s = summarize_qa_center(rows, max_score=6)
     assert s["total_runs"] == 3

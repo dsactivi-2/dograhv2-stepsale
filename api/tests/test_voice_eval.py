@@ -48,7 +48,9 @@ def test_extract_transcript():
 def test_assertions_on_transcript():
     results = run_assertions_on_transcript(
         [
-            EvalAssertion(type="response_contains", value="acme", case_insensitive=True),
+            EvalAssertion(
+                type="response_contains", value="acme", case_insensitive=True
+            ),
             EvalAssertion(type="disposition_equals", value="XFER"),
         ],
         transcript=extract_transcript(_rtf_logs()),
@@ -142,7 +144,9 @@ def test_guard_rate_limit():
 
 def test_guard_batch():
     try:
-        check_voice_eval_allowed(recent_session_count=0, batch_size=VOICE_EVAL_MAX_BATCH + 1)
+        check_voice_eval_allowed(
+            recent_session_count=0, batch_size=VOICE_EVAL_MAX_BATCH + 1
+        )
         assert False, "expected batch error"
     except VoiceEvalGuardError as e:
         assert e.code == "batch_too_large"

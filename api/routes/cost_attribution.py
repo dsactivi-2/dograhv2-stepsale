@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime, time
-from typing import Literal, Optional
+from typing import Literal
 from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -11,6 +11,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from api.db import db_client
 from api.db.models import UserModel
 from api.schemas.cost_attribution import CostAttributionSummary, CostBucket
+from api.services.aggregation_meta import sample_meta
 from api.services.auth.depends import get_user
 from api.services.cost_attribution.extract import summarize_cost_rows
 
@@ -27,7 +28,9 @@ def _parse_range(from_date: str, to_date: str, timezone: str):
     try:
         tz = ZoneInfo(timezone)
     except Exception as exc:
-        raise HTTPException(status_code=400, detail=f"Invalid timezone: {timezone}") from exc
+        raise HTTPException(
+            status_code=400, detail=f"Invalid timezone: {timezone}"
+        ) from exc
     try:
         start = datetime.combine(
             datetime.strptime(from_date, "%Y-%m-%d").date(), time.min, tzinfo=tz
@@ -54,22 +57,38 @@ async def cost_attribution_summary(
     from_date: str = Query(..., description="YYYY-MM-DD"),
     to_date: str = Query(..., description="YYYY-MM-DD"),
     timezone: str = Query("UTC"),
-    workflow_id: Optional[int] = Query(None),
-    campaign_id: Optional[int] = Query(None),
+    workflow_id: int | None = Query(None),
+    campaign_id: int | None = Query(None),
     group_by: Literal["workflow", "campaign", "definition"] = Query("workflow"),
     user: UserModel = Depends(get_user),
 ) -> CostAttributionSummary:
     org_id = _require_org(user)
     start_utc, end_utc = _parse_range(from_date, to_date, timezone)
-
-    rows = await db_client.list_runs_for_cost_attribution(
+    sample_limit = 10000
+    total_matching = await db_client.count_runs_for_cost_attribution(
         organization_id=org_id,
         start_utc=start_utc,
         end_utc=end_utc,
         workflow_id=workflow_id,
         campaign_id=campaign_id,
     )
+    rows = await db_client.list_runs_for_cost_attribution(
+        organization_id=org_id,
+        start_utc=start_utc,
+        end_utc=end_utc,
+        workflow_id=workflow_id,
+        campaign_id=campaign_id,
+        max_rows=sample_limit,
+    )
     summary = summarize_cost_rows(rows, group_by=group_by)
+    meta = sample_meta(
+        total_matching=total_matching,
+        sampled=len(rows),
+        sample_limit=sample_limit,
+    )
+    notes = list(summary.get("notes") or [])
+    if meta.get("truncation_note"):
+        notes = [meta["truncation_note"], *notes]
     return CostAttributionSummary(
         from_date=from_date,
         to_date=to_date,
@@ -86,5 +105,6 @@ async def cost_attribution_summary(
         total_charge_usd=summary["total_charge_usd"],
         total_dograh_tokens=summary["total_dograh_tokens"],
         buckets=[CostBucket(**b) for b in summary["buckets"]],
-        notes=list(summary.get("notes") or []),
+        notes=notes,
+        **meta,
     )

@@ -5,7 +5,6 @@ from __future__ import annotations
 from collections import Counter
 from typing import Any, Iterable, Mapping, Optional
 
-
 # Dispositions that typically mean the call never connected to a human.
 _NO_CONNECT_DISPOSITIONS = frozenset(
     {

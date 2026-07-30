@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Literal, Optional
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
@@ -21,47 +21,48 @@ class ComplianceFlag(BaseModel):
 class QaManualOverridePayload(BaseModel):
     """Body for reviewer override (audit trail stored in annotations)."""
 
-    overall_score: Optional[float] = Field(default=None, ge=0, le=100)
-    sentiment: Optional[str] = None
+    overall_score: float | None = Field(default=None, ge=0, le=100)
+    sentiment: str | None = None
     tags: list[str] = Field(default_factory=list)
     summary: str = ""
     notes: str = ""
     # Free-form compliance map: true=pass, false=fail, null/omit=unknown
-    compliance_flags: dict[str, Optional[bool]] = Field(default_factory=dict)
+    compliance_flags: dict[str, bool | None] = Field(default_factory=dict)
 
 
 class QaManualOverrideRecord(BaseModel):
     schema_version: Literal[1] = 1
-    overall_score: Optional[float] = None
-    sentiment: Optional[str] = None
+    overall_score: float | None = None
+    sentiment: str | None = None
     tags: list[str] = Field(default_factory=list)
     summary: str = ""
     notes: str = ""
-    compliance_flags: dict[str, Optional[bool]] = Field(default_factory=dict)
+    compliance_flags: dict[str, bool | None] = Field(default_factory=dict)
     reviewer_user_id: int
-    reviewer_email: Optional[str] = None
+    reviewer_email: str | None = None
     created_at: str
-    previous: Optional[dict[str, Any]] = None  # prior override snapshot (audit chain)
+    previous: dict[str, Any] | None = None  # prior override snapshot (audit chain)
 
 
 class QaCenterRunRow(BaseModel):
     run_id: int
     workflow_id: int
     workflow_name: str = ""
-    created_at: Optional[datetime] = None
+    campaign_id: int | None = None
+    created_at: datetime | None = None
     is_completed: bool = False
     disposition: str = "UNKNOWN"
     phone_number: str = ""
-    duration_seconds: Optional[float] = None
+    duration_seconds: float | None = None
     # Auto QA (schema v1)
     qa: QaRunOutcome
     # Effective after override
-    effective_score: Optional[float] = None
-    effective_sentiment: Optional[str] = None
+    effective_score: float | None = None
+    effective_sentiment: str | None = None
     effective_tags: list[str] = Field(default_factory=list)
     effective_summary: str = ""
     has_override: bool = False
-    override: Optional[QaManualOverrideRecord] = None
+    override: QaManualOverrideRecord | None = None
     # Queue / review
     needs_review: bool = False
     review_reasons: list[str] = Field(default_factory=list)
@@ -99,12 +100,13 @@ class QaCenterSummary(BaseModel):
     from_date: str
     to_date: str
     timezone: str
-    workflow_id: Optional[int] = None
+    workflow_id: int | None = None
+    campaign_id: int | None = None
     total_runs: int
     runs_with_qa: int
     runs_without_qa: int
     coverage_pct: float
-    average_score: Optional[float] = None
+    average_score: float | None = None
     low_score_count: int = 0
     problem_tag_count: int = 0
     override_count: int = 0
@@ -116,6 +118,11 @@ class QaCenterSummary(BaseModel):
     compliance_summary: list[ComplianceFlagSummary] = Field(default_factory=list)
     max_score_threshold: float = 6.0
     problem_tags: list[str] = Field(default_factory=list)
+    total_matching_runs: int = 0
+    sampled_runs: int = 0
+    sample_limit: int = 0
+    truncated: bool = False
+    truncation_note: str | None = None
 
 
 class QaCenterQueueResponse(BaseModel):
@@ -125,6 +132,12 @@ class QaCenterQueueResponse(BaseModel):
     max_score_threshold: float
     problem_tags: list[str]
     runs: list[QaCenterRunRow]
+    campaign_id: int | None = None
+    total_matching_runs: int = 0
+    sampled_runs: int = 0
+    sample_limit: int = 0
+    truncated: bool = False
+    truncation_note: str | None = None
 
 
 class QaCenterDetailResponse(BaseModel):

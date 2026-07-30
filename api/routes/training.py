@@ -14,6 +14,7 @@ from api.db.models import UserModel
 from api.enums import WorkflowRunMode
 from api.schemas.text_eval import EvalAssertion, EvalTurn, TextEvalScenario
 from api.schemas.training import (
+    ModuleProgressItem,
     ShadowCompleteRequest,
     TextDrillRunRequest,
     TrainingAttemptListResponse,
@@ -23,7 +24,6 @@ from api.schemas.training import (
     TrainingModuleResponse,
     TrainingModuleUpdate,
     TrainingProgressResponse,
-    ModuleProgressItem,
     VoiceDrillCompleteRequest,
     VoiceDrillStartRequest,
     VoiceDrillStartResponse,
@@ -88,7 +88,9 @@ async def _workflow_name(workflow_id: Optional[int], org_id: int) -> str:
     if workflow_id is None:
         return ""
     try:
-        return await db_client.get_workflow_name(workflow_id, organization_id=org_id) or ""
+        return (
+            await db_client.get_workflow_name(workflow_id, organization_id=org_id) or ""
+        )
     except Exception:
         return ""
 
@@ -231,7 +233,9 @@ async def update_module(
     is_owner = int(m.created_by_user_id) == int(user.id)
     is_super = bool(getattr(user, "is_superuser", False))
     if not (is_owner or is_super):
-        raise HTTPException(status_code=403, detail="Only creator or superuser can edit")
+        raise HTTPException(
+            status_code=403, detail="Only creator or superuser can edit"
+        )
     data = body.model_dump(exclude_unset=True)
     updated = await db_client.update_training_module(module_id, org_id, **data)
     assert updated is not None
@@ -251,7 +255,9 @@ async def delete_module(
     is_owner = int(m.created_by_user_id) == int(user.id)
     is_super = bool(getattr(user, "is_superuser", False))
     if not (is_owner or is_super):
-        raise HTTPException(status_code=403, detail="Only creator or superuser can delete")
+        raise HTTPException(
+            status_code=403, detail="Only creator or superuser can delete"
+        )
     await db_client.delete_training_module(module_id, org_id)
     return {"status": "deleted", "id": module_id}
 
@@ -490,7 +496,10 @@ async def run_text_drill(
                 run_id=workflow_run.id,
                 text_session=text_session,
             )
-        except (TextChatSessionRevisionConflictError, TextChatSessionExecutionError) as e:
+        except (
+            TextChatSessionRevisionConflictError,
+            TextChatSessionExecutionError,
+        ) as e:
             logger.warning(f"training session init issue: {e}")
         return {"workflow_run_id": workflow_run.id}
 
@@ -701,9 +710,7 @@ async def complete_voice_drill(
     if not m.is_published and int(m.created_by_user_id) != int(user.id):
         raise HTTPException(status_code=403, detail="Module not published")
 
-    run = await db_client.get_workflow_run(
-        body.workflow_run_id, organization_id=org_id
-    )
+    run = await db_client.get_workflow_run(body.workflow_run_id, organization_id=org_id)
     if not run:
         raise HTTPException(status_code=404, detail="Workflow run not found")
 
@@ -780,4 +787,3 @@ async def complete_voice_drill(
         workflow_run_id=attempt.workflow_run_id,
         created_at=attempt.created_at,
     )
-

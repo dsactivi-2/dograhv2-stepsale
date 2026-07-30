@@ -1,5 +1,5 @@
 from datetime import datetime, time
-from typing import Any, Dict, List, Optional
+from typing import Any
 from zoneinfo import ZoneInfo
 
 from api.db import db_client
@@ -11,8 +11,8 @@ class DailyReportService:
         organization_id: int,
         date: str,
         timezone: str,
-        workflow_id: Optional[int] = None,
-    ) -> Dict[str, Any]:
+        workflow_id: int | None = None,
+    ) -> dict[str, Any]:
         """
         Get daily report for a specific date and timezone.
 
@@ -42,14 +42,41 @@ class DailyReportService:
             workflow_id=workflow_id,
         )
 
+        # Success metrics from disposition taxonomy success_codes (fallback: XFER)
+        from api.services.disposition_taxonomy.service import (
+            is_success_disposition,
+            normalize_taxonomy,
+        )
+
+        tax_by_workflow: dict[int, object] = {}
+        workflow_ids = {int(r["workflow_id"]) for r in runs if r.get("workflow_id")}
+        for wid in workflow_ids:
+            try:
+                wf = await db_client.get_workflow(wid, organization_id=organization_id)
+            except Exception:
+                wf = None
+            raw_tax = getattr(wf, "call_disposition_codes", None) if wf else None
+            tax_by_workflow[wid] = normalize_taxonomy(raw_tax)
+
+        def _is_success(run: dict) -> bool:
+            disposition = (run.get("gathered_context") or {}).get(
+                "mapped_call_disposition"
+            )
+            wid = (
+                int(run["workflow_id"]) if run.get("workflow_id") is not None else None
+            )
+            tax = (
+                tax_by_workflow.get(wid)
+                if wid is not None
+                else normalize_taxonomy(None)
+            )
+            return is_success_disposition(tax, disposition)  # type: ignore[arg-type]
+
         # Calculate metrics
         total_runs = len(runs)
-        xfer_count = sum(
-            1
-            for run in runs
-            if run["gathered_context"]
-            and run["gathered_context"].get("mapped_call_disposition") == "XFER"
-        )
+        success_count = sum(1 for run in runs if _is_success(run))
+        # Keep xfer_count as alias for backward-compatible clients
+        xfer_count = success_count
 
         # Calculate disposition distribution
         disposition_counts = {}
@@ -139,9 +166,11 @@ class DailyReportService:
                     "range_end": bucket_data["range_end"],
                     "count": bucket_data["count"],
                     "percentage": round(
-                        (bucket_data["count"] / total_calls_with_duration * 100)
-                        if total_calls_with_duration > 0
-                        else 0,
+                        (
+                            (bucket_data["count"] / total_calls_with_duration * 100)
+                            if total_calls_with_duration > 0
+                            else 0
+                        ),
                         2,
                     ),
                 }
@@ -151,14 +180,18 @@ class DailyReportService:
             "date": date,
             "timezone": timezone,
             "workflow_id": workflow_id,
-            "metrics": {"total_runs": total_runs, "xfer_count": xfer_count},
+            "metrics": {
+                "total_runs": total_runs,
+                "success_count": success_count,
+                "xfer_count": xfer_count,  # alias of success_count
+            },
             "disposition_distribution": disposition_distribution,
             "call_duration_distribution": call_duration_distribution,
         }
 
     async def get_workflows_for_organization(
         self, organization_id: int
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Get all workflows for an organization.
         """
@@ -171,8 +204,8 @@ class DailyReportService:
         organization_id: int,
         date: str,
         timezone: str,
-        workflow_id: Optional[int] = None,
-    ) -> List[Dict[str, Any]]:
+        workflow_id: int | None = None,
+    ) -> list[dict[str, Any]]:
         """
         Get detailed workflow runs for CSV export.
 

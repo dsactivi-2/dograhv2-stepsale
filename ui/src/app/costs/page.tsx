@@ -6,6 +6,10 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
 import { getWorkflowOptionsApiV1OrganizationsReportsWorkflowsGet } from "@/client/sdk.gen";
+import {
+  ScopeHint,
+  TruncationBanner,
+} from "@/components/manage/DataScopeNotice";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -149,6 +153,9 @@ export default function CostAttributionPage() {
           </Button>
         </div>
       </div>
+
+      <ScopeHint variant="costs" />
+      <TruncationBanner meta={summary} entityLabel="runs" />
 
       <Card className="grid gap-4 p-4 md:grid-cols-5">
         <div className="space-y-1.5">

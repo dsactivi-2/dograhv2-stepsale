@@ -4297,6 +4297,10 @@ export type OrganizationPreferences = {
      * External Pbx Integrations Enabled
      */
     external_pbx_integrations_enabled?: boolean;
+    /**
+     * Ops Reviewer Emails
+     */
+    ops_reviewer_emails?: Array<string>;
 };
 
 /**

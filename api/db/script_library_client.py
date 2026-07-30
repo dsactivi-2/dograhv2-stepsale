@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from typing import Any, Optional
+from typing import Any
 
 from sqlalchemy import String, cast, func, or_
 from sqlalchemy.future import select
@@ -132,6 +132,8 @@ class ScriptLibraryClient(BaseDBClient):
         approval_status: str | None = None,
         actor_user_id: int,
         actor_is_superuser: bool = False,
+        actor_is_ops_reviewer: bool = False,
+        ops_review_strict: bool = False,
     ) -> ScriptLibraryEntryModel | None:
         async with self.async_session() as session:
             result = await session.execute(
@@ -154,16 +156,22 @@ class ScriptLibraryClient(BaseDBClient):
                 entry.definition_id = definition_id
 
             if approval_status is not None and approval_status != entry.approval_status:
-                can_approve = actor_is_superuser or entry.owner_user_id == actor_user_id
-                if approval_status in ("approved", "rejected") and not can_approve:
-                    raise PermissionError(
-                        "Only owner or superuser can approve/reject scripts"
+                if ops_review_strict:
+                    # Org configured ops_reviewer_emails: only those emails + superuser
+                    can_approve = bool(actor_is_superuser or actor_is_ops_reviewer)
+                    deny_msg = (
+                        "Only ops reviewers or superusers can approve/reject scripts"
                     )
+                else:
+                    # Legacy: owner or superuser
+                    can_approve = bool(
+                        actor_is_superuser or entry.owner_user_id == actor_user_id
+                    )
+                    deny_msg = "Only owner or superuser can approve/reject scripts"
+                if approval_status in ("approved", "rejected") and not can_approve:
+                    raise PermissionError(deny_msg)
                 entry.approval_status = approval_status
-                if approval_status == "approved":
-                    entry.approved_by_user_id = actor_user_id
-                    entry.approved_at = datetime.now(UTC)
-                elif approval_status == "rejected":
+                if approval_status == "approved" or approval_status == "rejected":
                     entry.approved_by_user_id = actor_user_id
                     entry.approved_at = datetime.now(UTC)
                 elif approval_status in ("draft", "pending"):
@@ -175,9 +183,7 @@ class ScriptLibraryClient(BaseDBClient):
             await session.refresh(entry)
             return entry
 
-    async def delete_script_entry(
-        self, entry_id: int, organization_id: int
-    ) -> bool:
+    async def delete_script_entry(self, entry_id: int, organization_id: int) -> bool:
         async with self.async_session() as session:
             result = await session.execute(
                 select(ScriptLibraryEntryModel).where(
@@ -265,7 +271,10 @@ class ScriptLibraryClient(BaseDBClient):
             prompts = extract_node_prompts(definition.workflow_json or {})
             for p in prompts:
                 text = p["text"]
-                if q_lower not in text.lower() and q_lower not in p["node_name"].lower():
+                if (
+                    q_lower not in text.lower()
+                    and q_lower not in p["node_name"].lower()
+                ):
                     # still allow FTS-only matches by including first matching prompt
                     # if any token appears
                     tokens = [t for t in q_lower.split() if t]
@@ -292,16 +301,14 @@ class ScriptLibraryClient(BaseDBClient):
                     return hits
         return hits[:limit]
 
-    async def owner_emails_map(
-        self, user_ids: list[int]
-    ) -> dict[int, Optional[str]]:
+    async def owner_emails_map(self, user_ids: list[int]) -> dict[int, str | None]:
         if not user_ids:
             return {}
         async with self.async_session() as session:
             result = await session.execute(
                 select(UserModel).where(UserModel.id.in_(user_ids))
             )
-            out: dict[int, Optional[str]] = {}
+            out: dict[int, str | None] = {}
             for u in result.scalars().all():
                 out[u.id] = getattr(u, "email", None) or getattr(u, "provider_id", None)
             return out

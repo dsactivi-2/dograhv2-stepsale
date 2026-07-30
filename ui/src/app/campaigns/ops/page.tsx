@@ -12,6 +12,10 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
 import { getWorkflowOptionsApiV1OrganizationsReportsWorkflowsGet } from "@/client/sdk.gen";
+import {
+  ScopeHint,
+  TruncationBanner,
+} from "@/components/manage/DataScopeNotice";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -183,6 +187,9 @@ export default function CampaignControlTowerPage() {
           </Button>
         </div>
       </div>
+
+      <ScopeHint variant="campaign-ops" />
+      <TruncationBanner meta={summary} entityLabel="campaigns" />
 
       <Card className="grid gap-4 p-4 md:grid-cols-4">
         <div className="space-y-1.5">

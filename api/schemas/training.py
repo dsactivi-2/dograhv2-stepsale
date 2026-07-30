@@ -121,8 +121,6 @@ class QuizItemResult(BaseModel):
     explanation: str = ""
 
 
-
-
 class VoiceDrillStartRequest(BaseModel):
     """Optional overrides when starting a voice drill session."""
 
@@ -138,9 +136,7 @@ class VoiceDrillStartResponse(BaseModel):
     max_duration_hint_seconds: int
     signaling_path: str
     guards: dict[str, Any] = Field(default_factory=dict)
-    message: str = (
-        "Connect via WebRTC, speak, hang up, then POST .../voice/complete."
-    )
+    message: str = "Connect via WebRTC, speak, hang up, then POST .../voice/complete."
 
 
 class VoiceDrillCompleteRequest(BaseModel):

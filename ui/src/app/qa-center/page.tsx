@@ -14,6 +14,10 @@ import {
 import { useCallback, useEffect, useState } from "react";
 
 import { getWorkflowOptionsApiV1OrganizationsReportsWorkflowsGet } from "@/client/sdk.gen";
+import {
+  ScopeHint,
+  TruncationBanner,
+} from "@/components/manage/DataScopeNotice";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -37,10 +41,10 @@ import {
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  type QaCenterRunRow,
-  type QaCenterSummary,
   fetchQaCenterQueue,
   fetchQaCenterSummary,
+  type QaCenterRunRow,
+  type QaCenterSummary,
   rerunQa,
   saveQaOverride,
 } from "@/lib/api/qaCenter";
@@ -87,6 +91,7 @@ export default function QaCenterPage() {
     Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
   );
   const [workflowId, setWorkflowId] = useState<string>("all");
+  const [campaignIdFilter, setCampaignIdFilter] = useState("");
   const [maxScore, setMaxScore] = useState("6");
   const [onlyReview, setOnlyReview] = useState(true);
   const [workflows, setWorkflows] = useState<WorkflowOption[]>([]);
@@ -126,6 +131,13 @@ export default function QaCenterPage() {
     setError(null);
     const wf = workflowId !== "all" ? Number(workflowId) : null;
     const thr = Number(maxScore) || 6;
+    const cidRaw = campaignIdFilter.trim();
+    const cid = cidRaw ? Number(cidRaw) : null;
+    if (cid != null && Number.isNaN(cid)) {
+      setError("campaign_id must be a number");
+      setLoading(false);
+      return;
+    }
     try {
       const [sum, queue] = await Promise.all([
         fetchQaCenterSummary({
@@ -133,6 +145,7 @@ export default function QaCenterPage() {
           to_date: toDate,
           timezone,
           workflow_id: wf,
+          campaign_id: cid,
           max_score: thr,
         }),
         fetchQaCenterQueue({
@@ -140,6 +153,7 @@ export default function QaCenterPage() {
           to_date: toDate,
           timezone,
           workflow_id: wf,
+          campaign_id: cid,
           max_score: thr,
           only_needs_review: onlyReview,
           page: 1,
@@ -162,6 +176,7 @@ export default function QaCenterPage() {
     toDate,
     timezone,
     workflowId,
+    campaignIdFilter,
     maxScore,
     onlyReview,
   ]);
@@ -267,7 +282,10 @@ export default function QaCenterPage() {
         </Button>
       </div>
 
-      <Card className="grid gap-4 p-4 md:grid-cols-5">
+      <ScopeHint variant="qa" />
+      <TruncationBanner meta={summary} entityLabel="runs" />
+
+      <Card className="grid gap-4 p-4 md:grid-cols-6">
         <div className="space-y-1.5">
           <Label htmlFor="from">Von</Label>
           <Input
@@ -301,6 +319,17 @@ export default function QaCenterPage() {
               ))}
             </SelectContent>
           </Select>
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="campaignId">Campaign ID</Label>
+          <Input
+            id="campaignId"
+            type="text"
+            inputMode="numeric"
+            placeholder="optional"
+            value={campaignIdFilter}
+            onChange={(e) => setCampaignIdFilter(e.target.value)}
+          />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="maxScore">Low-Score ≤</Label>

@@ -26,7 +26,9 @@ def upgrade() -> None:
         sa.Column("definition_id", sa.Integer(), nullable=True),
         sa.Column("title", sa.String(length=255), nullable=False),
         sa.Column("description", sa.Text(), nullable=False, server_default=""),
-        sa.Column("tags", sa.JSON(), nullable=False, server_default=sa.text("'[]'::json")),
+        sa.Column(
+            "tags", sa.JSON(), nullable=False, server_default=sa.text("'[]'::json")
+        ),
         sa.Column("owner_user_id", sa.Integer(), nullable=False),
         sa.Column(
             "approval_status",
@@ -42,26 +44,34 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(
             ["definition_id"], ["workflow_definitions.id"], ondelete="SET NULL"
         ),
-        sa.ForeignKeyConstraint(["organization_id"], ["organizations.id"], ondelete="CASCADE"),
+        sa.ForeignKeyConstraint(
+            ["organization_id"], ["organizations.id"], ondelete="CASCADE"
+        ),
         sa.ForeignKeyConstraint(["owner_user_id"], ["users.id"]),
         sa.ForeignKeyConstraint(["workflow_id"], ["workflows.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index("ix_script_library_org", "script_library_entries", ["organization_id"])
+    op.create_index(
+        "ix_script_library_org", "script_library_entries", ["organization_id"]
+    )
     op.create_index(
         "ix_script_library_workflow", "script_library_entries", ["workflow_id"]
     )
     op.create_index(
         "ix_script_library_status", "script_library_entries", ["approval_status"]
     )
-    op.create_index("ix_script_library_owner", "script_library_entries", ["owner_user_id"])
+    op.create_index(
+        "ix_script_library_owner", "script_library_entries", ["owner_user_id"]
+    )
     op.create_index(
         op.f("ix_script_library_entries_id"), "script_library_entries", ["id"]
     )
 
 
 def downgrade() -> None:
-    op.drop_index(op.f("ix_script_library_entries_id"), table_name="script_library_entries")
+    op.drop_index(
+        op.f("ix_script_library_entries_id"), table_name="script_library_entries"
+    )
     op.drop_index("ix_script_library_owner", table_name="script_library_entries")
     op.drop_index("ix_script_library_status", table_name="script_library_entries")
     op.drop_index("ix_script_library_workflow", table_name="script_library_entries")
