@@ -9,6 +9,7 @@ from datetime import UTC, datetime
 
 from fastapi import APIRouter, HTTPException, Request
 from loguru import logger
+from pipecat.utils.run_context import set_current_run_id
 from starlette.responses import HTMLResponse
 
 from api.db import db_client
@@ -23,7 +24,6 @@ from api.utils.common import get_backend_endpoints
 from api.utils.telephony_helper import (
     parse_webhook_request,
 )
-from pipecat.utils.run_context import set_current_run_id
 
 router = APIRouter()
 

@@ -1,14 +1,15 @@
 from types import SimpleNamespace
 from unittest.mock import patch
 
+from pipecat.services.settings import NOT_GIVEN
+from pipecat.transcriptions.language import Language
+
 from api.services.configuration.registry import (
     DeepgramSTTConfiguration,
     ServiceProviders,
 )
 from api.services.pipecat.audio_config import AudioConfig
 from api.services.pipecat.service_factory import create_stt_service
-from pipecat.services.settings import NOT_GIVEN
-from pipecat.transcriptions.language import Language
 
 
 def test_deepgram_stt_schema_includes_flux_multilingual_language_options():

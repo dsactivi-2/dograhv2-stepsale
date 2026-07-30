@@ -3,6 +3,8 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
 import pytest
+from pipecat.processors.aggregators.llm_context import LLMSpecificMessage
+from pipecat.tests import MockLLMService
 
 from api.db.models import OrganizationModel, UserModel, organization_users_association
 from api.enums import OrganizationConfigurationKey
@@ -15,8 +17,6 @@ from api.services.workflow.text_chat_runner import (
     _serialize_text_chat_checkpoint_messages,
 )
 from api.tests.integrations._run_pipeline_helpers import USER_CONFIGURATION
-from pipecat.processors.aggregators.llm_context import LLMSpecificMessage
-from pipecat.tests import MockLLMService
 
 
 def _log_texts(logs: dict | None, event_type: str) -> list[str]:

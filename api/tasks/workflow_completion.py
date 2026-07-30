@@ -1,10 +1,10 @@
 from loguru import logger
+from pipecat.utils.run_context import set_current_run_id
 
 from api.services.workflow_run_billing import (
     report_completed_workflow_run_platform_usage,
 )
 from api.tasks.run_integrations import run_integrations_post_workflow_run
-from pipecat.utils.run_context import set_current_run_id
 
 
 async def process_workflow_completion(

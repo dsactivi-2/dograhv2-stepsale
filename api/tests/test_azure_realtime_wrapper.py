@@ -2,14 +2,14 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
 import pytest
-
-from api.services.pipecat.realtime.azure_realtime import (
-    DograhAzureRealtimeLLMService,
-)
 from pipecat.frames.frames import TTSSpeakFrame
 from pipecat.processors.aggregators.llm_context import LLMContext
 from pipecat.processors.frame_processor import FrameDirection
 from pipecat.services.openai.realtime import events
+
+from api.services.pipecat.realtime.azure_realtime import (
+    DograhAzureRealtimeLLMService,
+)
 
 
 def _make_service() -> DograhAzureRealtimeLLMService:

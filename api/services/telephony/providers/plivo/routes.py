@@ -9,6 +9,7 @@ from xml.sax.saxutils import escape
 
 from fastapi import APIRouter, Request
 from loguru import logger
+from pipecat.utils.run_context import set_current_run_id
 from starlette.responses import HTMLResponse
 
 from api.db import db_client
@@ -22,7 +23,6 @@ from api.services.telephony.transfer_event_protocol import (
     TransferEvent,
     TransferEventType,
 )
-from pipecat.utils.run_context import set_current_run_id
 
 router = APIRouter()
 

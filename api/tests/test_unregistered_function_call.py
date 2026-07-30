@@ -1,7 +1,6 @@
 """Tests for LLM behavior when calling an unregistered function."""
 
 import pytest
-
 from pipecat.frames.frames import (
     FunctionCallInProgressFrame,
     FunctionCallResultFrame,

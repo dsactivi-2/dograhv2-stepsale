@@ -1,6 +1,8 @@
 from types import SimpleNamespace
 from unittest.mock import patch
 
+from pipecat.services.minimax.llm import MiniMaxLLMService as RealMiniMaxLLMService
+
 from api.services.configuration.registry import (
     MiniMaxLLMConfiguration,
     MiniMaxTTSConfiguration,
@@ -10,7 +12,6 @@ from api.services.pipecat.service_factory import (
     create_llm_service_from_provider,
     create_tts_service,
 )
-from pipecat.services.minimax.llm import MiniMaxLLMService as RealMiniMaxLLMService
 
 
 class TestMiniMaxLLMConfiguration:

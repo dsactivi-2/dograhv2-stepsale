@@ -13,10 +13,6 @@ import asyncio
 from unittest.mock import AsyncMock, patch
 
 import pytest
-
-from api.services.pipecat.worker_runner import run_pipeline_worker
-from api.services.workflow.pipecat_engine import PipecatEngine
-from api.services.workflow.workflow_graph import WorkflowGraph
 from pipecat.frames.frames import (
     BotStoppedSpeakingFrame,
     Frame,
@@ -46,6 +42,10 @@ from pipecat.turns.user_start import TranscriptionUserTurnStartStrategy
 from pipecat.turns.user_stop import ExternalUserTurnStopStrategy
 from pipecat.turns.user_turn_strategies import UserTurnStrategies
 from pipecat.utils.time import time_now_iso8601
+
+from api.services.pipecat.worker_runner import run_pipeline_worker
+from api.services.workflow.pipecat_engine import PipecatEngine
+from api.services.workflow.workflow_graph import WorkflowGraph
 
 
 class UserSpeechInjector(FrameProcessor):

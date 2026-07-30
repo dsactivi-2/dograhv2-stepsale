@@ -2,6 +2,8 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 import pytest
+from pipecat.services.elevenlabs.stt import CommitStrategy
+from pipecat.transcriptions.language import Language
 
 from api.services.configuration.options import (
     ELEVENLABS_STT_LANGUAGES,
@@ -17,8 +19,6 @@ from api.services.pipecat.service_factory import (
     create_tts_service,
     stt_uses_external_turns,
 )
-from pipecat.services.elevenlabs.stt import CommitStrategy
-from pipecat.transcriptions.language import Language
 
 
 def _audio_config() -> AudioConfig:

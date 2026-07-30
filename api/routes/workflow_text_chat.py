@@ -3,6 +3,7 @@ from typing import Any, Dict
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, HTTPException
+from pipecat.utils.run_context import set_current_run_id
 from pydantic import BaseModel, Field
 
 from api.db import db_client
@@ -25,7 +26,6 @@ from api.services.workflow.text_chat_session_service import (
     normalize_text_chat_session_data,
     rewind_text_chat_session_state,
 )
-from pipecat.utils.run_context import set_current_run_id
 
 router = APIRouter(prefix="/workflow", tags=["workflow-text-chat"])
 

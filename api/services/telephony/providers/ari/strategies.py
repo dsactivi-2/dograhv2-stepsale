@@ -6,7 +6,6 @@ This module contains the business logic for Asterisk ARI call operations.
 from typing import TYPE_CHECKING, Any, Dict
 
 from loguru import logger
-
 from pipecat.serializers.call_strategies import HangupStrategy, TransferStrategy
 
 if TYPE_CHECKING:
