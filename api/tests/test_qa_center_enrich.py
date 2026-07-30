@@ -1,5 +1,6 @@
 """Unit tests for QA Center enrich + override (no DB)."""
 
+from api.schemas.qa_center import QaManualOverridePayload
 from api.services.outcomes.normalize import normalize_run_qa
 from api.services.qa_center.enrich import (
     build_qa_center_row,
@@ -7,7 +8,6 @@ from api.services.qa_center.enrich import (
     summarize_qa_center,
 )
 from api.services.qa_center.override import apply_manual_override, read_override
-from api.schemas.qa_center import QaManualOverridePayload
 
 
 def _qa_annotations(score=4, tags=None, sentiment="negative"):

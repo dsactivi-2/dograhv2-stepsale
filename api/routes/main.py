@@ -18,6 +18,7 @@ from api.routes.knowledge_base import router as knowledge_base_router
 from api.routes.node_types import router as node_types_router
 from api.routes.organization import router as organization_router
 from api.routes.organization_usage import router as organization_usage_router
+from api.routes.outcomes import router as outcomes_router
 from api.routes.public_agent import router as public_agent_router
 from api.routes.public_download import router as public_download_router
 from api.routes.public_embed import router as public_embed_router
@@ -27,7 +28,6 @@ from api.routes.s3_signed_url import router as s3_router
 from api.routes.scripts import router as scripts_router
 from api.routes.service_keys import router as service_keys_router
 from api.routes.stepsales import router as stepsales_router
-from api.routes.outcomes import router as outcomes_router
 from api.routes.superuser import router as superuser_router
 from api.routes.telephony import router as telephony_router
 from api.routes.tool import router as tool_router

@@ -14,6 +14,7 @@ from api.db.models import UserModel
 from api.enums import WorkflowRunMode
 from api.schemas.text_eval import EvalAssertion, EvalTurn, TextEvalScenario
 from api.schemas.training import (
+    ModuleProgressItem,
     ShadowCompleteRequest,
     TextDrillRunRequest,
     TrainingAttemptListResponse,
@@ -23,7 +24,6 @@ from api.schemas.training import (
     TrainingModuleResponse,
     TrainingModuleUpdate,
     TrainingProgressResponse,
-    ModuleProgressItem,
     VoiceDrillCompleteRequest,
     VoiceDrillStartRequest,
     VoiceDrillStartResponse,

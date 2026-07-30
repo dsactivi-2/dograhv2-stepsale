@@ -6,9 +6,9 @@ import pytest
 from pydantic import ValidationError
 
 from api.schemas.stepsales import (
+    CallOutcomeRequest,
     CreateOfferRequest,
     QualifyLeadRequest,
-    CallOutcomeRequest,
 )
 from api.services.stepsales.packages import (
     compute_final_price,
