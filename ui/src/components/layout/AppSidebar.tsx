@@ -499,7 +499,7 @@ export function AppSidebar() {
                     </p>
                   </div>
                 ) : isLatest ? (
-                  <p>You're on the latest version</p>
+                  <p>You&apos;re on the latest version</p>
                 ) : (
                   <div className="space-y-0.5">
                     <p>UI v{versionInfo.ui}</p>
