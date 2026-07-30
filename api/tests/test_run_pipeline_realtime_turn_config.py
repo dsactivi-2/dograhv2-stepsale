@@ -1,3 +1,15 @@
+import api.services.pipecat.run_pipeline as run_pipeline_module
+from api.services.configuration.registry import ServiceProviders
+from api.services.pipecat.run_pipeline import (
+    DEFAULT_PROVISIONAL_VAD_PAUSE_SECS,
+    DEFAULT_TURN_START_MIN_WORDS,
+    DEFAULT_USER_TURN_STOP_TIMEOUT,
+    EXTERNAL_TURN_USER_STOP_TIMEOUT,
+    _create_non_realtime_user_turn_start_strategies,
+    _create_non_realtime_user_turn_stop_strategies,
+    _create_realtime_user_turn_config,
+    _resolve_user_turn_stop_timeout,
+)
 from pipecat.audio.vad.silero import SileroVADAnalyzer
 from pipecat.frames.frames import BotStartedSpeakingFrame, TranscriptionFrame
 from pipecat.turns.types import ProcessFrameResult
@@ -14,19 +26,6 @@ from pipecat.turns.user_stop import (
     ExternalUserTurnStopStrategy,
     SpeechTimeoutUserTurnStopStrategy,
     TurnAnalyzerUserTurnStopStrategy,
-)
-
-import api.services.pipecat.run_pipeline as run_pipeline_module
-from api.services.configuration.registry import ServiceProviders
-from api.services.pipecat.run_pipeline import (
-    DEFAULT_PROVISIONAL_VAD_PAUSE_SECS,
-    DEFAULT_TURN_START_MIN_WORDS,
-    DEFAULT_USER_TURN_STOP_TIMEOUT,
-    EXTERNAL_TURN_USER_STOP_TIMEOUT,
-    _create_non_realtime_user_turn_start_strategies,
-    _create_non_realtime_user_turn_stop_strategies,
-    _create_realtime_user_turn_config,
-    _resolve_user_turn_stop_timeout,
 )
 
 

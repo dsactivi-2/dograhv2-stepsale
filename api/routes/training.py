@@ -7,7 +7,6 @@ from uuid import uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from loguru import logger
-from pipecat.utils.run_context import set_current_run_id
 
 from api.db import db_client
 from api.db.models import UserModel
@@ -55,6 +54,7 @@ from api.services.workflow.text_chat_session_service import (
     initialize_text_chat_session,
     normalize_text_chat_session_data,
 )
+from pipecat.utils.run_context import set_current_run_id
 
 router = APIRouter(prefix="/training", tags=["training"])
 

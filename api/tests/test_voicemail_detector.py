@@ -8,6 +8,8 @@ incoming speech as CONVERSATION or VOICEMAIL and how the main LLM responds.
 import asyncio
 
 import pytest
+
+from api.services.pipecat.worker_runner import run_pipeline_worker
 from pipecat.extensions.voicemail.voicemail_detector import VoicemailDetector
 from pipecat.frames.frames import (
     EndWorkerFrame,
@@ -41,8 +43,6 @@ from pipecat.turns.user_stop import (
 )
 from pipecat.turns.user_turn_strategies import UserTurnStrategies
 from pipecat.utils.time import time_now_iso8601
-
-from api.services.pipecat.worker_runner import run_pipeline_worker
 
 
 class FrameInjector(FrameProcessor):

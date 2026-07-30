@@ -29,13 +29,12 @@ from contextlib import ExitStack, contextmanager
 from typing import Any
 from unittest.mock import AsyncMock, patch
 
+from api.db.models import OrganizationModel, UserModel
+from api.enums import WorkflowRunMode
 from pipecat.frames.frames import Frame
 from pipecat.observers.base_observer import BaseObserver
 from pipecat.processors.frame_processor import FrameDirection, FrameProcessor
 from pipecat.tests import MockLLMService, MockTTSService
-
-from api.db.models import OrganizationModel, UserModel
-from api.enums import WorkflowRunMode
 
 USER_CONFIGURATION: dict[str, Any] = {
     "is_realtime": False,

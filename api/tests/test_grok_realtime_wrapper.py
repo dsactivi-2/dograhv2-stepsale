@@ -2,10 +2,6 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
 import pytest
-from pipecat.frames.frames import LLMMessagesAppendFrame, TTSSpeakFrame
-from pipecat.processors.aggregators.llm_context import LLMContext
-from pipecat.processors.frame_processor import FrameDirection
-from pipecat.services.xai.realtime import events
 
 from api.schemas.ai_model_configuration import EffectiveAIModelConfiguration
 from api.services.configuration.registry import GrokRealtimeLLMConfiguration
@@ -13,6 +9,10 @@ from api.services.pipecat.realtime.grok_realtime import (
     DograhGrokRealtimeLLMService,
 )
 from api.services.pipecat.service_factory import create_realtime_llm_service
+from pipecat.frames.frames import LLMMessagesAppendFrame, TTSSpeakFrame
+from pipecat.processors.aggregators.llm_context import LLMContext
+from pipecat.processors.frame_processor import FrameDirection
+from pipecat.services.xai.realtime import events
 
 
 def _make_service() -> DograhGrokRealtimeLLMService:

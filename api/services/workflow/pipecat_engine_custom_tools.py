@@ -12,13 +12,6 @@ import uuid
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from loguru import logger
-from pipecat.adapters.schemas.function_schema import FunctionSchema
-from pipecat.frames.frames import (
-    FunctionCallResultProperties,
-    TTSSpeakFrame,
-)
-from pipecat.services.llm_service import FunctionCallParams
-from pipecat.utils.enums import EndTaskReason
 
 from api.db import db_client
 from api.enums import ToolCategory, WorkflowRunMode
@@ -37,6 +30,13 @@ from api.services.workflow.tools.transfer_resolver import (
     resolve_transfer_config,
 )
 from api.utils.template_renderer import render_template
+from pipecat.adapters.schemas.function_schema import FunctionSchema
+from pipecat.frames.frames import (
+    FunctionCallResultProperties,
+    TTSSpeakFrame,
+)
+from pipecat.services.llm_service import FunctionCallParams
+from pipecat.utils.enums import EndTaskReason
 
 if TYPE_CHECKING:
     from api.services.workflow.mcp_tool_session import McpToolSession
