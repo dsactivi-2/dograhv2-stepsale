@@ -1,0 +1,23 @@
+{
+  "name": "DograhV2",
+  "install": "bash .cursor/install.sh",
+  "start": "bash .cursor/start.sh",
+  "terminals": [
+    {
+      "name": "backend",
+      "command": "bash .cursor/run-backend.sh",
+      "description": "FastAPI backend (uvicorn + arq + ari_manager + campaign_orchestrator) on :8000, then tails logs."
+    },
+    {
+      "name": "ui",
+      "command": "bash .cursor/run-ui.sh",
+      "description": "Next.js dev server (Turbopack) on :3000."
+    }
+  ],
+  "ports": [
+    { "name": "Dograh UI", "port": 3000 },
+    { "name": "Dograh API", "port": 8000 },
+    { "name": "MinIO API", "port": 9000 },
+    { "name": "MinIO Console", "port": 9001 }
+  ]
+}
