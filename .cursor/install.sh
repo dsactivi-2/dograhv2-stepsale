@@ -32,7 +32,10 @@ echo "==> [3/6] Installing pipecat with provider extras (editable)"
 uv pip install "$ROOT/pipecat[cartesia,deepgram,openai,elevenlabs,groq,google,azure,sarvam,soundfile,silero,webrtc,speechmatics,openrouter,camb,mcp,inworld,smallest]"
 uv pip install --group "$ROOT/pipecat/pyproject.toml:dev"
 uv pip uninstall opencv-python >/dev/null 2>&1 || true
-uv pip install opencv-python-headless
+# Match pipecat's own opencv-python pin (>=4.11.0.86,<5). Leaving this
+# unconstrained pulls the opencv 5.x prerelease, which drops constants the
+# pipecat smallwebrtc transport imports (e.g. cv2.COLOR_YUV2RGB_I420).
+uv pip install "opencv-python-headless>=4.11.0.86,<5"
 python -c "import nltk; nltk.download('punkt_tab', download_dir='$ROOT/venv/nltk_data', quiet=True)"
 uv pip install -e "$ROOT/pipecat" --no-deps
 
