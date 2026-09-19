@@ -15,6 +15,7 @@ dograhV2/
 ├── pipecat/          # Pipecat framework (git submodule)
 ├── sdk/              # Python + TypeScript SDKs for workflow authoring
 ├── .agents/          # Skills, prompts, and agent playbooks
+├── .cursor-plugin/   # Cursor marketplace + plugin manifest (publishes .agents/skills)
 ├── docker-compose.yaml       # Production/OSS deployment
 ├── docker-compose-local.yaml # Local development services
 ```
@@ -31,6 +32,10 @@ dograhV2/
 ## Local Development
 
 Contributor setup and service startup are documented in `docs/contribution/setup.mdx`.
+
+## Cursor plugins
+
+This repo is a Cursor marketplace. Manifest: [`.cursor-plugin/marketplace.json`](.cursor-plugin/marketplace.json). Install notes: [`.cursor-plugin/README.md`](.cursor-plugin/README.md). Skills stay in `.agents/skills/` — do not copy them into the plugin tree.
 
 ## Environment Configuration
 

@@ -1,0 +1,19 @@
+{
+  "name": "dograhv2",
+  "version": "1.0.0",
+  "description": "DograhV2 coding-agent skills: Knowledge Loop, PR review, and AGENTS.md audits.",
+  "author": {
+    "name": "DograhV2 StepSale"
+  },
+  "homepage": "https://github.com/dsactivi-2/dograhv2-stepsale",
+  "repository": "https://github.com/dsactivi-2/dograhv2-stepsale",
+  "license": "BSD-2-Clause",
+  "keywords": [
+    "dograh",
+    "dograhv2",
+    "voice-ai",
+    "knowledge-loop",
+    "workflows"
+  ],
+  "skills": ".agents/skills"
+}

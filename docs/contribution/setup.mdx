@@ -9,6 +9,17 @@ Dograh is a Next.js UI (`ui/`), a FastAPI backend (`api/`), and a [Pipecat](http
 **Using Claude Code or Codex?** Install the [Dograh setup skill](https://github.com/dograh-hq/dograh-plugins) (`/plugin marketplace add dograh-hq/dograh-plugins`, then `/plugin install dograh@dograh`) and ask your agent to *"set up Dograh for development"* — it runs the steps below for you and verifies the stack is healthy.
 </Tip>
 
+<Tip>
+**Using Cursor?** This repo ships a Cursor marketplace at `.cursor-plugin/marketplace.json`. It publishes the in-repo coding-agent skills (`dograhV2`, `review-pr`, `review-agents-md`) — not the official setup/doctor plugin above. Add `dsactivi-2/dograhv2-stepsale` as a marketplace and install `dograhv2`, or symlink this checkout:
+
+```bash
+mkdir -p ~/.cursor/plugins/local
+ln -sfn "$(git rev-parse --show-toplevel)" ~/.cursor/plugins/local/dograhv2
+```
+
+Reload Cursor, then confirm the plugin under **Customize**. Full notes live in `.cursor-plugin/README.md`.
+</Tip>
+
 ## Set up
 
 You need Git, a local Docker engine (such as Docker Desktop), and VS Code with the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers).

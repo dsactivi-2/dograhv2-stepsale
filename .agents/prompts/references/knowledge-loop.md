@@ -116,7 +116,7 @@ A single PR may be multi-type (`API+DOC+AGT`). Classify **all** that apply.
 | `S_MCP_I` | `api/mcp_server/instructions.py` | MCP authoring LLM (orchestration) |
 | `S_MCP_T` | tool modules + docstrings | MCP authoring LLM (tools/list) |
 | `S_VPG` | voice prompting guide registry/topics | `get_voice_prompting_guide` |
-| `S_SKILL` | `.agents/skills/**`, `.claude/skills/**` | coding agents (triggered playbooks) |
+| `S_SKILL` | `.agents/skills/**`, `.claude/skills/**` (Cursor publishes the same skills via `.cursor-plugin/marketplace.json`, no second copy) | coding agents (triggered playbooks) |
 | `S_PROMPT` | `.agents/prompts/**` | harness system prompts |
 | `S_CODE` | source of truth for runtime behavior | runtime / tests |
 

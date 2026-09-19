@@ -1,0 +1,28 @@
+{
+  "name": "dograhv2-marketplace",
+  "owner": {
+    "name": "DograhV2 StepSale"
+  },
+  "metadata": {
+    "description": "Cursor marketplace for DograhV2 / StepSale coding-agent skills. Skills stay in .agents/skills; this manifest only publishes them.",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "dograhv2",
+      "source": ".",
+      "description": "Build and extend DograhV2 with the Knowledge Loop, plus PR and AGENTS.md review skills.",
+      "version": "1.0.0",
+      "license": "BSD-2-Clause",
+      "keywords": [
+        "dograh",
+        "dograhv2",
+        "voice-ai",
+        "knowledge-loop",
+        "workflows"
+      ],
+      "category": "developer-tools",
+      "skills": ".agents/skills"
+    }
+  ]
+}
